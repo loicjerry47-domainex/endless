@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DDUP · DOMAINEX</title>
+<meta name="description" content="A background companion that lives on your device. Breathes when you breathe. Ages when you age." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:       #07060a;
+    --bg-soft:  #0e0c14;
+    --ink:      #f4ecdc;
+    --warm:     #f5c97a;
+    --ember:    #e88a4a;
+    --dim:      rgba(244, 236, 220, 0.50);
+    --faint:    rgba(244, 236, 220, 0.14);
+    --hairline: rgba(244, 236, 220, 0.10);
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --serif: "Cormorant Garamond", Iowan Old Style, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    canvas { display: none; }
+  }
+
+  /* ── canvas bg ── */
+  canvas#bg {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* ── layout ── */
+  main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 48px 160px; }
+
+  /* ── nav ── */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 0 24px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 0;
+  }
+  .nav-brand {
+    display: flex; gap: 14px; align-items: center;
+    font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--dim);
+  }
+  .nav-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--warm);
+    box-shadow: 0 0 12px var(--warm);
+    animation: pulse 3.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%       { opacity: 1;    transform: scale(1.3); }
+  }
+  .nav-right {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
+  }
+
+  /* ── hero ── */
+  .hero {
+    padding: 120px 0 100px;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 80px;
+    align-items: end;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .hero-kicker {
+    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(64px, 10vw, 148px);
+    line-height: 0.90;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 0;
+  }
+  .hero h1 em { color: var(--warm); font-style: italic; }
+  .hero-right { padding-bottom: 6px; }
+  .hero-lede {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 22px;
+    line-height: 1.55;
+    color: var(--ink);
+    max-width: 34ch;
+    margin-bottom: 36px;
+  }
+  .hero-lede strong { color: var(--warm); font-style: normal; font-weight: 400; }
+  .hero-meta {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--dim); line-height: 2;
+  }
+
+  /* ── section label ── */
+  .section-h {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 48px 0 24px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 0;
+  }
+  .section-h h2 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(32px, 4vw, 52px);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .section-h .meta {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
+  }
+
+  /* ── experience cards ── */
+  .experiences {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border-left: 1px solid var(--hairline);
+    margin-bottom: 0;
+  }
+  .exp-card {
+    display: flex; flex-direction: column;
+    padding: 36px 32px 32px;
+    border-right: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    transition: background 300ms ease;
+    min-height: 300px;
+  }
+  .exp-card:hover { background: rgba(244, 236, 220, 0.025); }
+  .exp-card:hover .exp-arrow { opacity: 1; transform: translate(0, 0); }
+  .exp-card:hover .exp-title { color: var(--warm); }
+  .exp-num {
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--warm); margin-bottom: 20px;
+  }
+  .exp-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(28px, 3.5vw, 44px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 16px;
+    transition: color 300ms ease;
+  }
+  .exp-body {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+    flex: 1;
+    max-width: 42ch;
+  }
+  .exp-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 28px;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .exp-tag { color: var(--dim); }
+  .exp-arrow {
+    color: var(--warm);
+    opacity: 0;
+    transform: translate(-6px, 4px);
+    transition: opacity 280ms ease, transform 280ms ease;
+    font-size: 16px;
+  }
+
+  /* ── wide card (full row) ── */
+  .exp-card.wide {
+    grid-column: span 2;
+  }
+  .exp-card.wide .exp-title { font-size: clamp(36px, 5vw, 72px); }
+  .exp-card.wide .exp-body  { max-width: 70ch; }
+
+  /* ── about block ── */
+  .about {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 48px;
+    border-top: 1px solid var(--hairline);
+    padding: 48px 0;
+  }
+  .about-label {
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--dim); padding-top: 4px;
+  }
+  .about-label .n { color: var(--warm); margin-right: 8px; }
+  .about-body {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--ink);
+    max-width: 62ch;
+  }
+  .about-body p + p { margin-top: 16px; }
+  .about-body strong { color: var(--warm); font-style: normal; font-weight: 400; }
+  .about-body em { font-style: normal; color: var(--warm); }
+
+  /* ── flow ── */
+  .flow-wrap {
+    border-top: 1px solid var(--hairline);
+    padding-top: 48px;
+    margin-bottom: 0;
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    margin-top: 28px;
+  }
+  .flow-step {
+    padding: 28px 22px 32px;
+    border-right: 1px solid var(--hairline);
+    display: flex; flex-direction: column;
+  }
+  .flow-step:last-child { border-right: 0; }
+  .flow-step .n {
+    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--warm); margin-bottom: 16px;
+  }
+  .flow-step .t {
+    font-family: var(--serif);
+    font-style: italic; font-weight: 300;
+    font-size: 22px; line-height: 1.2;
+    color: var(--ink); margin-bottom: 12px;
+  }
+  .flow-step .d {
+    font-size: 11px; color: var(--dim); line-height: 1.8;
+  }
+
+  /* ── creed / footer ── */
+  .creed {
+    padding: 120px 0 80px;
+    text-align: center;
+    border-top: 1px solid var(--hairline);
+    margin-top: 100px;
+  }
+  .creed .glyph {
+    font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase;
+    color: var(--warm); margin-bottom: 32px;
+  }
+  .creed .line {
+    font-family: var(--serif);
+    font-style: italic; font-weight: 300;
+    font-size: clamp(28px, 4vw, 52px);
+    line-height: 1.3;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    max-width: 24ch;
+    margin: 0 auto 40px;
+  }
+  .creed .signoff {
+    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ── responsive ── */
+  @media (max-width: 900px) {
+    main { padding: 0 22px 100px; }
+    .hero { grid-template-columns: 1fr; gap: 36px; padding: 80px 0 72px; }
+    .experiences { grid-template-columns: 1fr; }
+    .exp-card.wide { grid-column: span 1; }
+    .about { grid-template-columns: 1fr; gap: 18px; }
+    .flow { grid-template-columns: 1fr 1fr; }
+    .flow-step:nth-child(2) { border-right: 0; }
+    .flow-step:nth-child(1),
+    .flow-step:nth-child(2) { border-bottom: 1px solid var(--hairline); }
+  }
+  @media (max-width: 540px) {
+    .flow { grid-template-columns: 1fr; }
+    .flow-step { border-right: 0; border-bottom: 1px solid var(--hairline); }
+    .flow-step:last-child { border-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<main>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-dot"></div>
+      <span>DDUP &nbsp;·&nbsp; DOMAINEX</span>
+    </div>
+    <div class="nav-right">v0.1 &nbsp;/&nbsp; treatment</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="hero-kicker">codename WZXA &nbsp;·&nbsp; background companion</div>
+      <h1>he lives<br/><em>&amp;</em><br/>so do you.</h1>
+    </div>
+    <div class="hero-right">
+      <p class="hero-lede">
+        A theme that <strong>breathes</strong>. An autonomous companion living quietly in the background of your device —
+        aging when you age, vibing when you vibe, doing the thing you should be doing when you aren't.
+      </p>
+      <div class="hero-meta">
+        <div>not an app &nbsp;·&nbsp; the wallpaper</div>
+        <div>8 stages &nbsp;·&nbsp; 14 coming</div>
+        <div>ships monthly &nbsp;·&nbsp; never repeats</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCES -->
+  <div class="section-h">
+    <h2>the work.</h2>
+    <div class="meta">5 prototypes</div>
+  </div>
+
+  <div class="experiences">
+
+    <a class="exp-card wide" href="welcome/wzxa.html">
+      <div class="exp-num">001 &nbsp;treatment</div>
+      <div class="exp-title">WZXA &mdash; full concept</div>
+      <div class="exp-body">
+        The complete treatment doc. Who he is, how he runs, every stage from 4–6 through 28+.
+        The onboarding calibration. The night theme. The creed.
+      </div>
+      <div class="exp-footer">
+        <span class="exp-tag">doc &nbsp;·&nbsp; scrollable</span>
+        <span class="exp-arrow">&#8599;</span>
+      </div>
+    </a>
+
+    <a class="exp-card" href="welcome/wzxa-lockscreen.html">
+      <div class="exp-num">002 &nbsp;prototype</div>
+      <div class="exp-title">lockscreen</div>
+      <div class="exp-body">
+        Interactive explorer. Pick an age stage, drag through the hour of day —
+        watch WZXA shift his palette, activity, and mood in real time.
+      </div>
+      <div class="exp-footer">
+        <span class="exp-tag">interactive &nbsp;·&nbsp; 8 stages</span>
+        <span class="exp-arrow">&#8599;</span>
+      </div>
+    </a>
+
+    <a class="exp-card" href="welcome/endlessly.html">
+      <div class="exp-num">003 &nbsp;motion</div>
+      <div class="exp-title">endlessly</div>
+      <div class="exp-body">
+        A single breath as a generative loop. Inhale, between, harvest, fold.
+        Drag to pull the particles. Hold to pause time. Click to leave a word behind.
+      </div>
+      <div class="exp-footer">
+        <span class="exp-tag">generative &nbsp;·&nbsp; interactive</span>
+        <span class="exp-arrow">&#8599;</span>
+      </div>
+    </a>
+
+    <a class="exp-card" href="welcome/hello-goodbye.html">
+      <div class="exp-num">004 &nbsp;meditation</div>
+      <div class="exp-title">hello,&nbsp; goodbye.</div>
+      <div class="exp-body">
+        Three states: the seed, the elaboration, the harvest. Click or press space to move
+        through them. The particle field mirrors where you are.
+      </div>
+      <div class="exp-footer">
+        <span class="exp-tag">3 scenes &nbsp;·&nbsp; click to advance</span>
+        <span class="exp-arrow">&#8599;</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- ABOUT -->
+  <div class="about">
+    <div class="about-label"><span class="n">01</span>thesis</div>
+    <div class="about-body">
+      <p>
+        WZXA is not an app you open. <strong>He is the wallpaper that has a life of his own.</strong>
+        A background process that runs as smoothly as the OS itself — a parallel self performing
+        a version of your day, calibrated to who you said you are.
+      </p>
+      <p>
+        Every experience is relative. Every perception accounted for.
+        Authenticity is the rule: until <em>you</em> have lived a thing, WZXA cannot mirror it back at you.
+        The honesty is the architecture.
+      </p>
+    </div>
+  </div>
+
+  <div class="about">
+    <div class="about-label"><span class="n">02</span>onboarding</div>
+    <div class="about-body">
+      <p>
+        Six choices made once, at install. They calibrate the whole organism.
+        Pick honestly — <strong>WZXA only works at the resolution of the truth you give him.</strong>
+      </p>
+      <p>
+        Sex. Age. Type of life. Interest. Intelligence. That's it.
+        The rest he figures out by watching the clock and the silence between your taps.
+      </p>
+    </div>
+  </div>
+
+  <div class="about">
+    <div class="about-label"><span class="n">03</span>updates</div>
+    <div class="about-body">
+      <p>
+        Behavior reshapes <strong>monthly</strong>. WZXA is never finished — he ages forward, never backward.
+        Every update is one more month he survived alongside you.
+      </p>
+      <p>
+        The longer he runs, <em>the heavier his goodbye becomes.</em>
+      </p>
+    </div>
+  </div>
+
+  <!-- SYSTEM FLOW -->
+  <div class="flow-wrap">
+    <div class="section-h" style="border-top:0; padding-top: 0;">
+      <h2>how he runs.</h2>
+    </div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="n">001 &nbsp;sense</div>
+        <div class="t">read the surface</div>
+        <div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div>
+      </div>
+      <div class="flow-step">
+        <div class="n">002 &nbsp;mirror</div>
+        <div class="t">do what you do</div>
+        <div class="d">when you're working, he's working. when you're silent, he speaks.</div>
+      </div>
+      <div class="flow-step">
+        <div class="n">003 &nbsp;diverge</div>
+        <div class="t">do what you don't</div>
+        <div class="d">when you stop, he picks up. coding. praying. moving without you.</div>
+      </div>
+      <div class="flow-step">
+        <div class="n">004 &nbsp;return</div>
+        <div class="t">become you again</div>
+        <div class="d">at the next breath, he folds back to where you are. the background settles.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREED -->
+  <section class="creed">
+    <div class="glyph">M · E · B</div>
+    <div class="line">to be perfect is to be what is:<br/><em>past, present, future = perfect.</em></div>
+    <div class="signoff">ddup &nbsp;·&nbsp; domainex &nbsp;·&nbsp; no doubt</div>
+  </section>
+
+</main>
+
+<script>
+(() => {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, DPR = Math.min(devicePixelRatio || 1, 2);
+
+  function resize() {
+    W = innerWidth; H = innerHeight;
+    canvas.width  = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  const N = 120;
+  const ps = [];
+  for (let i = 0; i < N; i++) {
+    ps.push({
+      a:     Math.random() * Math.PI * 2,
+      r:     Math.random(),
+      seed:  Math.random(),
+      phase: Math.random() * Math.PI * 2,
+      size:  0.4 + Math.random() * 1.1,
+    });
+  }
+
+  function frame(now) {
+    ctx.fillStyle = 'rgba(7, 6, 10, 0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W * 0.80, cy = H * 0.26;
+    const breath = 0.55 + Math.sin(now * 0.00055) * 0.45;
+    const R = Math.min(W, H) * 0.30;
+
+    for (let i = 0; i < N; i++) {
+      const p = ps[i];
+      const a   = p.a + now * 0.000055 * (p.seed - 0.5);
+      const r   = p.r * R * (0.25 + breath * 0.9);
+      const wob = Math.sin(now * 0.00075 + p.phase) * 5;
+      const x   = cx + Math.cos(a) * r + wob;
+      const y   = cy + Math.sin(a) * r * 0.82;
+
+      const warmth = 0.3 + p.seed * 0.5;
+      const ri = 245, gi = Math.round(201 + (236 - 201) * (1 - warmth)), bi = Math.round(122 + (220 - 122) * (1 - warmth));
+      ctx.fillStyle = `rgba(${ri}, ${gi}, ${bi}, ${0.35 + p.seed * 0.38})`;
+      ctx.beginPath();
+      ctx.arc(x, y, p.size * (0.8 + (1 - breath) * 0.6), 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = `rgba(${ri}, ${gi}, ${bi}, 0.03)`;
+      ctx.beginPath();
+      ctx.arc(x, y, p.size * 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

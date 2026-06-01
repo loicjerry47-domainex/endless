@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>WZXA — lockscreen prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07060a;
+    --ink: #f4ecdc;
+    --warm: #f5c97a;
+    --ember: #e88a4a;
+    --dim: rgba(244, 236, 220, 0.50);
+    --faint: rgba(244, 236, 220, 0.14);
+    --hairline: rgba(244, 236, 220, 0.10);
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --serif: "Cormorant Garamond", Georgia, serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 36px 80px;
+    align-items: start;
+  }
+
+  /* phone stage on the left */
+  .stage {
+    display: flex; flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 80vh;
+    padding-top: 12px;
+  }
+
+  .stage h1 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 38px;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .stage .sub {
+    font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 28px;
+  }
+
+  /* phone bezel */
+  .phone {
+    width: 360px; height: 740px;
+    background: #1a1620;
+    border-radius: 54px;
+    padding: 12px;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 60px 140px rgba(0, 0, 0, 0.7),
+      inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+    position: relative;
+  }
+  .phone .screen {
+    width: 100%; height: 100%;
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+    isolation: isolate;
+  }
+  .phone .notch {
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 110px; height: 28px;
+    background: #000;
+    border-radius: 18px;
+    z-index: 50;
+  }
+
+  /* lockscreen content */
+  .lock {
+    position: absolute; inset: 0;
+    background: var(--bgcolor, #1a1820);
+    color: var(--ink);
+    transition: background 1.6s ease, color 1.6s ease;
+    display: flex; flex-direction: column;
+  }
+
+  .lock canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  .lock .layer {
+    position: absolute; inset: 0;
+    z-index: 2;
+    display: flex; flex-direction: column;
+    padding: 56px 24px 36px;
+    color: inherit;
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: inherit;
+    margin-bottom: 22px;
+    padding: 0 6px;
+  }
+  .status-bar .right {
+    display: flex; gap: 5px; align-items: center;
+  }
+
+  .lock .clock {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 84px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-align: center;
+    margin-top: 4px;
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.4);
+  }
+  .lock .date {
+    text-align: center;
+    font-size: 11px; letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    opacity: 0.78;
+  }
+
+  .lock .wzxa-card {
+    margin-top: auto;
+    margin-bottom: 12px;
+    border-radius: 18px;
+    background: rgba(20, 18, 28, 0.55);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 16px;
+    display: flex; flex-direction: column;
+    gap: 8px;
+    transition: background 1.2s ease, border 1.2s ease;
+  }
+  .lock .wzxa-card .row1 {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 9.5px; letter-spacing: 0.25em; text-transform: uppercase;
+    opacity: 0.72;
+  }
+  .lock .wzxa-card .row1 .live {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .lock .wzxa-card .row1 .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--warm);
+    box-shadow: 0 0 8px var(--warm);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  .lock .wzxa-card .activity {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 19px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .lock .wzxa-card .meta {
+    font-size: 10px;
+    opacity: 0.55;
+    letter-spacing: 0.05em;
+    display: flex; justify-content: space-between;
+  }
+
+  .lock .home-bar {
+    width: 110px; height: 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 4px;
+    margin: 8px auto 0;
+  }
+
+  /* time & age controls */
+  .controls {
+    display: flex; flex-direction: column; gap: 28px;
+    border-left: 1px solid var(--hairline);
+    padding-left: 36px;
+    padding-top: 12px;
+    min-height: 80vh;
+  }
+
+  .control-h {
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+  .control-h .num { color: var(--warm); margin-right: 8px; }
+
+  /* age picker */
+  .ages {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .ages button {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 12px 6px;
+    cursor: pointer;
+    border-radius: 1px;
+    letter-spacing: 0.08em;
+    transition: all 200ms ease;
+  }
+  .ages button:hover { color: var(--ink); border-color: var(--dim); }
+  .ages button.active {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+
+  /* hour slider */
+  .hour-row {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 10px; letter-spacing: 0.18em; color: var(--dim); text-transform: uppercase;
+  }
+  .hour-row .now {
+    font-family: var(--mono); font-size: 14px;
+    color: var(--ink); letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    min-width: 60px;
+  }
+  .hour-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none; appearance: none;
+    height: 1px; background: var(--faint);
+    outline: none; cursor: pointer;
+  }
+  .hour-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--warm);
+    box-shadow: 0 0 12px var(--warm);
+    cursor: pointer;
+  }
+  .hour-row input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--warm);
+    border: 0;
+    box-shadow: 0 0 12px var(--warm);
+    cursor: pointer;
+  }
+  .hour-marks {
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--dim); letter-spacing: 0.18em;
+    margin-top: 8px;
+  }
+  .hour-marks span {
+    transition: color 250ms ease;
+  }
+  .hour-marks span.active { color: var(--warm); }
+
+  /* preset moments */
+  .moments {
+    display: flex; flex-direction: column;
+    gap: 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .moments button {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 16px;
+    text-align: left;
+    padding: 14px 8px 14px 0;
+    cursor: pointer;
+    display: flex; justify-content: space-between; align-items: baseline;
+    transition: padding 200ms ease, color 200ms ease;
+  }
+  .moments button:hover { padding-left: 8px; color: var(--warm); }
+  .moments button .t {
+    font-family: var(--mono); font-style: normal;
+    font-size: 9.5px; letter-spacing: 0.22em;
+    color: var(--dim);
+  }
+
+  .creed {
+    font-family: var(--serif);
+    font-style: italic; font-weight: 300;
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--dim);
+    border-left: 1px solid var(--warm);
+    padding-left: 14px;
+    margin-top: auto;
+  }
+  .creed strong { color: var(--ink); font-weight: 400; }
+
+  @media (max-width: 940px) {
+    .page { grid-template-columns: 1fr; gap: 32px; padding: 24px 16px 64px; }
+    .controls { border-left: 0; padding-left: 0; border-top: 1px solid var(--hairline); padding-top: 24px; }
+    .phone { width: 320px; height: 660px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- phone -->
+  <div class="stage">
+    <h1>he is the wallpaper.</h1>
+    <div class="sub">wzxa &nbsp;·&nbsp; lockscreen v0</div>
+
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="lock" id="lock">
+          <canvas id="orb"></canvas>
+          <div class="layer">
+            <div class="status-bar">
+              <span id="sbTime">—:—</span>
+              <div class="right">
+                <span>WZXA</span>
+                <span>·</span>
+                <span>100%</span>
+              </div>
+            </div>
+            <div class="clock" id="clock">—:—</div>
+            <div class="date" id="date">— · stage —</div>
+
+            <div class="wzxa-card">
+              <div class="row1">
+                <div class="live">
+                  <div class="dot"></div>
+                  <span>WZXA · live</span>
+                </div>
+                <span id="cardStage">stage —</span>
+              </div>
+              <div class="activity" id="activity">…</div>
+              <div class="meta">
+                <span id="metaState">…</span>
+                <span id="metaMood">…</span>
+              </div>
+            </div>
+
+            <div class="home-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- controls -->
+  <div class="controls">
+    <div>
+      <div class="control-h"><span class="num">01</span>age stage</div>
+      <div class="ages" id="ages"></div>
+    </div>
+
+    <div>
+      <div class="control-h"><span class="num">02</span>hour of the day</div>
+      <div class="hour-row">
+        <span class="now" id="hourNow">06:00</span>
+        <input type="range" id="hour" min="0" max="1439" step="1" value="360" />
+      </div>
+      <div class="hour-marks" id="marks">
+        <span data-h="dawn">dawn</span>
+        <span data-h="day">day</span>
+        <span data-h="dusk">dusk</span>
+        <span data-h="night">night</span>
+        <span data-h="late">late</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="control-h"><span class="num">03</span>jump to a moment</div>
+      <div class="moments" id="moments"></div>
+    </div>
+
+    <div class="creed">
+      he ages with you. <strong>he vibes when you vibe.</strong> when you stop, he picks up where you left.
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//   WZXA STAGE DATA
+// ============================================================
+const STAGES = [
+  {
+    id: '4-6', label: '4–6', stageName: 'regular things',
+    palette: { day: '#e9d8b5', night: '#3a2f24', textDay: '#2a221a', textNight: '#f4ecdc', accent: '#f5c97a' },
+    orb: { hue: 'warm', density: 0.7, drift: 0.6 },
+    schedule: [
+      { from: 6,  to: 8,  state: 'getting up', activity: 'rubbing his eyes, looking at the ceiling', mood: 'soft' },
+      { from: 8,  to: 12, state: 'school',     activity: 'walking, asking the same question', mood: 'curious' },
+      { from: 12, to: 16, state: 'play',       activity: 'running for no reason', mood: 'wide' },
+      { from: 16, to: 20, state: 'home',       activity: 'looking at a stranger too long', mood: 'open' },
+      { from: 20, to: 22, state: 'wind down',  activity: 'one last stupid question', mood: 'tender' },
+      { from: 22, to: 30, state: 'asleep',     activity: 'asleep, breathing slow', mood: 'still' },
+    ],
+  },
+  {
+    id: '7-8', label: '7–8', stageName: 'thinking properly',
+    palette: { day: '#e2d4b8', night: '#2c2622', textDay: '#28221c', textNight: '#f4ecdc', accent: '#f5c97a' },
+    orb: { hue: 'warm', density: 0.7, drift: 0.7 },
+    schedule: [
+      { from: 6,  to: 8,  state: 'awake',  activity: 'staring at his hands', mood: 'considering' },
+      { from: 8,  to: 14, state: 'school', activity: 'answering nothing, then telling one truth', mood: 'sharp' },
+      { from: 14, to: 18, state: 'home',   activity: 'asking about space', mood: 'large' },
+      { from: 18, to: 22, state: 'evening',activity: 'believing he is what he believes', mood: 'sure' },
+      { from: 22, to: 30, state: 'asleep', activity: 'asleep · the thought finishes alone', mood: 'still' },
+    ],
+  },
+  {
+    id: '8-12', label: '8–12', stageName: 'play, no border',
+    palette: { day: '#d8c8a0', night: '#241e1a', textDay: '#211a14', textNight: '#f4ecdc', accent: '#f5c97a' },
+    orb: { hue: 'warm', density: 0.8, drift: 0.9 },
+    schedule: [
+      { from: 6,  to: 8,  state: 'awake',  activity: 'eating fast', mood: 'hungry' },
+      { from: 8,  to: 14, state: 'school', activity: 'inventing a sport', mood: 'inventing' },
+      { from: 14, to: 18, state: 'play',   activity: 'breaking what he invented', mood: 'unbothered' },
+      { from: 18, to: 22, state: 'home',   activity: 'random hard language', mood: 'testing' },
+      { from: 22, to: 30, state: 'asleep', activity: 'asleep · already plotting tomorrow', mood: 'still' },
+    ],
+  },
+  {
+    id: '12-16', label: '12–16', stageName: 'shit getting real',
+    palette: { day: '#b8aa8a', night: '#1c1814', textDay: '#1a1610', textNight: '#f4ecdc', accent: '#e88a4a' },
+    orb: { hue: 'mixed', density: 0.85, drift: 1.0 },
+    schedule: [
+      { from: 6,  to: 7,  state: 'wake',   activity: 'fight, hide, die, or flight', mood: 'on edge' },
+      { from: 7,  to: 14, state: 'school', activity: 'reading the room', mood: 'wary' },
+      { from: 14, to: 18, state: 'after',  activity: 'on a bike, troubling traffic', mood: 'reckless' },
+      { from: 18, to: 23, state: 'late',   activity: 'lying about where he was', mood: 'guarded' },
+      { from: 23, to: 30, state: 'sleep',  activity: 'asleep · phone in hand', mood: 'thin' },
+    ],
+  },
+  {
+    id: '16-20', label: '16–20', stageName: 'turning point',
+    palette: { day: '#9a8c70', night: '#181410', textDay: '#15110c', textNight: '#f4ecdc', accent: '#e88a4a' },
+    orb: { hue: 'mixed', density: 0.9, drift: 1.1 },
+    schedule: [
+      { from: 7,  to: 10, state: 'awake',  activity: 'thinking about a girl', mood: 'distracted' },
+      { from: 10, to: 15, state: 'school', activity: 'never acting on it', mood: 'restrained' },
+      { from: 15, to: 19, state: 'after',  activity: 'kicking a ball, counting bills', mood: 'split' },
+      { from: 19, to: 23, state: 'night',  activity: 'becoming the One before One', mood: 'forming' },
+      { from: 23, to: 30, state: 'late',   activity: 'awake too long, scrolling slow', mood: 'thin' },
+    ],
+  },
+  {
+    id: '20-24', label: '20–24', stageName: 'most fucked-up state',
+    palette: { day: '#7a6e5c', night: '#0e0a14', textDay: '#15110c', textNight: '#f4ecdc', accent: '#e88a4a' },
+    orb: { hue: 'cool-warm', density: 1.0, drift: 1.3 },
+    schedule: [
+      { from: 7,  to: 13, state: 'work',   activity: 'job moves · disc moves', mood: 'pushing' },
+      { from: 13, to: 19, state: 'reset',  activity: 'pre-game alone', mood: 'building' },
+      { from: 19, to: 23, state: 'out',    activity: 'sauced up, three blunts', mood: 'loose' },
+      { from: 23, to: 26, state: 'club',   activity: 'making faces like M', mood: 'far' },
+      { from: 26, to: 30, state: 'home',   activity: 'staring at the ceiling', mood: 'hollow' },
+    ],
+  },
+  {
+    id: '24-28', label: '24–28', stageName: 'died many times already',
+    palette: { day: '#5e544a', night: '#0a0810', textDay: '#15110c', textNight: '#f4ecdc', accent: '#f5c97a' },
+    orb: { hue: 'warm', density: 0.95, drift: 0.9 },
+    schedule: [
+      { from: 6,  to: 12, state: 'work',   activity: 'coding · god shit', mood: 'sharp' },
+      { from: 12, to: 18, state: 'mid',    activity: 'doing what you stopped doing', mood: 'steady' },
+      { from: 18, to: 22, state: 'evening',activity: 'manifesting', mood: 'ascending' },
+      { from: 22, to: 26, state: 'late',   activity: 'a blunt, a window, a thought', mood: 'quiet' },
+      { from: 26, to: 30, state: 'sleep',  activity: 'finally', mood: 'still' },
+    ],
+  },
+  {
+    id: '28+', label: '28+', stageName: 'master of this shit',
+    palette: { day: '#48413a', night: '#06060c', textDay: '#f4ecdc', textNight: '#f4ecdc', accent: '#f5c97a' },
+    orb: { hue: 'warm-deep', density: 1.0, drift: 0.7 },
+    schedule: [
+      { from: 5,  to: 11, state: 'awake',  activity: 'sitting still', mood: 'weighted' },
+      { from: 11, to: 17, state: 'work',   activity: 'building', mood: 'flowing' },
+      { from: 17, to: 22, state: 'evening',activity: 'remembering', mood: 'soft' },
+      { from: 22, to: 26, state: 'night',  activity: 'being what is', mood: 'whole' },
+      { from: 26, to: 29, state: 'sleep',  activity: 'asleep · indistinguishable from prayer', mood: 'still' },
+    ],
+  },
+];
+
+const MOMENTS = [
+  { label: 'morning, school age',     stage: '8-12',  hour: 7.5  },
+  { label: 'on the bike at sunset',   stage: '12-16', hour: 18.5 },
+  { label: 'turning point, midday',   stage: '16-20', hour: 13   },
+  { label: 'three blunts deep',       stage: '20-24', hour: 23.5 },
+  { label: 'the window, alone',       stage: '24-28', hour: 25   }, // 1am
+  { label: 'master, still',           stage: '28+',   hour: 6    },
+];
+
+// ============================================================
+//   STATE + RENDER
+// ============================================================
+const lock     = document.getElementById('lock');
+const clockEl  = document.getElementById('clock');
+const dateEl   = document.getElementById('date');
+const sbTime   = document.getElementById('sbTime');
+const activityEl = document.getElementById('activity');
+const metaState  = document.getElementById('metaState');
+const metaMood   = document.getElementById('metaMood');
+const cardStage  = document.getElementById('cardStage');
+const hourEl   = document.getElementById('hour');
+const hourNow  = document.getElementById('hourNow');
+const agesEl   = document.getElementById('ages');
+const momentsEl= document.getElementById('moments');
+const marks    = document.getElementById('marks');
+
+let curStageIdx = 4;       // 16-20 default — keep it interesting
+let curMinutes  = 13 * 60; // 13:00
+
+// build age buttons
+STAGES.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.textContent = s.label;
+  b.dataset.idx = i;
+  b.addEventListener('click', () => {
+    curStageIdx = i;
+    render();
+  });
+  agesEl.appendChild(b);
+});
+
+// build moments
+MOMENTS.forEach(m => {
+  const b = document.createElement('button');
+  const hh = Math.floor(m.hour) % 24;
+  const mm = Math.round((m.hour % 1) * 60);
+  const tStr = String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+  b.innerHTML = `<span>${m.label}</span><span class="t">${tStr}</span>`;
+  b.addEventListener('click', () => {
+    curStageIdx = STAGES.findIndex(s => s.id === m.stage);
+    curMinutes = Math.round(m.hour * 60) % 1440;
+    hourEl.value = curMinutes;
+    render();
+  });
+  momentsEl.appendChild(b);
+});
+
+hourEl.addEventListener('input', e => {
+  curMinutes = parseInt(e.target.value, 10);
+  render();
+});
+
+function fmtTime(mins) {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+
+function dayPart(hour) {
+  if (hour < 5) return 'late';
+  if (hour < 8) return 'dawn';
+  if (hour < 17) return 'day';
+  if (hour < 20) return 'dusk';
+  if (hour < 23) return 'night';
+  return 'late';
+}
+
+function findScheduled(stage, hourFloat) {
+  // schedule "hours" can extend past 24 to model "late after midnight" — wrap around
+  const h = hourFloat;
+  for (const s of stage.schedule) {
+    const from = s.from, to = s.to;
+    if (to > 24) {
+      // wraps midnight
+      if (h >= from || h < (to - 24)) return s;
+    } else {
+      if (h >= from && h < to) return s;
+    }
+  }
+  return stage.schedule[stage.schedule.length - 1];
+}
+
+// background tone interpolation
+function lerp(a, b, t) { return a + (b - a) * t; }
+function hexToRgb(h) {
+  const s = h.replace('#','');
+  return [parseInt(s.slice(0,2),16), parseInt(s.slice(2,4),16), parseInt(s.slice(4,6),16)];
+}
+function rgbStr([r,g,b]) { return `rgb(${r|0}, ${g|0}, ${b|0})`; }
+function lerpRgb(a, b, t) { return [lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)]; }
+
+// returns 0..1 darkness factor based on hour
+function darkness(hourFloat) {
+  // smooth: full day at 12, full night at 0/24
+  const h = hourFloat % 24;
+  // distance from noon
+  const d = Math.abs(h - 13);   // peak day at 1pm
+  // 0 at noon, 11 at midnight
+  let t = d / 11;
+  t = Math.max(0, Math.min(1, t));
+  // ease
+  return t * t;
+}
+
+function render() {
+  const stage = STAGES[curStageIdx];
+  const hourFloat = curMinutes / 60;
+  const sched = findScheduled(stage, hourFloat);
+  const dk = darkness(hourFloat);
+
+  // colors
+  const dayRgb = hexToRgb(stage.palette.day);
+  const nightRgb = hexToRgb(stage.palette.night);
+  const bg = lerpRgb(dayRgb, nightRgb, dk);
+  const textDay = hexToRgb(stage.palette.textDay);
+  const textNight = hexToRgb(stage.palette.textNight);
+  const text = lerpRgb(textDay, textNight, dk);
+
+  lock.style.background = rgbStr(bg);
+  lock.style.color = rgbStr(text);
+
+  // text content
+  clockEl.textContent = fmtTime(curMinutes);
+  sbTime.textContent  = fmtTime(curMinutes);
+  const dayName = ['SUN','MON','TUE','WED','THU','FRI','SAT'][Math.floor(curMinutes/1440 + 3) % 7];
+  dateEl.textContent = `${dayName} · ${stage.label} · ${stage.stageName}`;
+  activityEl.textContent = sched.activity;
+  metaState.textContent = `state · ${sched.state}`;
+  metaMood.textContent  = `mood · ${sched.mood}`;
+  cardStage.textContent = `stage ${stage.label}`;
+  hourNow.textContent = fmtTime(curMinutes);
+
+  // active age btn
+  [...agesEl.children].forEach((b, i) => b.classList.toggle('active', i === curStageIdx));
+
+  // active mark
+  const part = dayPart(hourFloat);
+  [...marks.children].forEach(m => m.classList.toggle('active', m.dataset.h === part));
+
+  // pass to canvas
+  orbCfg.darkness = dk;
+  orbCfg.stage = stage;
+  orbCfg.sleeping = sched.state === 'asleep' || sched.state === 'sleep';
+}
+
+// ============================================================
+//   ORB CANVAS — WZXA's heartbeat on the lockscreen
+// ============================================================
+const orbCfg = { darkness: 0.5, stage: STAGES[4], sleeping: false };
+
+(() => {
+  const c = document.getElementById('orb');
+  const ctx = c.getContext('2d');
+  let W, H, DPR = Math.min(devicePixelRatio || 1, 2);
+
+  function resize() {
+    const r = c.getBoundingClientRect();
+    W = r.width; H = r.height;
+    c.width = W * DPR; c.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  // wait for layout
+  setTimeout(resize, 50);
+  addEventListener('resize', resize);
+
+  const N = 180;
+  const ps = [];
+  for (let i = 0; i < N; i++) {
+    ps.push({
+      a: Math.random() * Math.PI * 2,
+      r: Math.random(),
+      seed: Math.random(),
+      phase: Math.random() * Math.PI * 2,
+      size: 0.5 + Math.random() * 1.4,
+    });
+  }
+
+  function frame(now) {
+    if (!W) { requestAnimationFrame(frame); return; }
+
+    // trail fade
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.15 + orbCfg.darkness * 0.1})`;
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = H * 0.55;
+    const breathSpeed = orbCfg.sleeping ? 0.00025 : 0.0007;
+    const breath = 0.5 + Math.sin(now * breathSpeed) * 0.5;
+    const drift = orbCfg.stage.orb.drift || 1.0;
+    const density = orbCfg.stage.orb.density || 0.8;
+
+    const R = Math.min(W, H) * 0.35 * (0.6 + breath * 0.7) * density;
+
+    for (let i = 0; i < N; i++) {
+      const p = ps[i];
+      const a = p.a + now * 0.00006 * drift * (p.seed - 0.5);
+      const r = p.r * R * (0.2 + breath * 0.9);
+      const wob = Math.sin(now * 0.0008 + p.phase) * 6 * drift;
+      const x = cx + Math.cos(a) * r + wob;
+      const y = cy + Math.sin(a) * r * 0.85;
+
+      // color based on stage palette + darkness
+      const accent = orbCfg.stage.palette.accent;
+      const [ar, ag, ab] = hexToRgbLocal(accent);
+      const warmFactor = 0.4 + orbCfg.darkness * 0.5 + p.seed * 0.2;
+      const r2 = Math.round(244 + (ar - 244) * warmFactor);
+      const g2 = Math.round(236 + (ag - 236) * warmFactor);
+      const b2 = Math.round(220 + (ab - 220) * warmFactor);
+
+      const alpha = (orbCfg.sleeping ? 0.3 : 0.55) + p.seed * 0.35;
+      ctx.fillStyle = `rgba(${r2}, ${g2}, ${b2}, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, p.size * (0.8 + (1 - breath) * 0.5), 0, Math.PI * 2);
+      ctx.fill();
+
+      // halo — stronger at night
+      const haloA = 0.025 + orbCfg.darkness * 0.04;
+      ctx.fillStyle = `rgba(${r2}, ${g2}, ${b2}, ${haloA})`;
+      ctx.beginPath();
+      ctx.arc(x, y, p.size * (5 + orbCfg.darkness * 6), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  function hexToRgbLocal(h) {
+    const s = h.replace('#','');
+    return [parseInt(s.slice(0,2),16), parseInt(s.slice(2,4),16), parseInt(s.slice(4,6),16)];
+  }
+  requestAnimationFrame(frame);
+})();
+
+// initial render
+render();
+</script>
+</body>
+</html>

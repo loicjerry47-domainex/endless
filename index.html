@@ -15,11 +15,20 @@
     --ink:      #f4ecdc;
     --warm:     #f5c97a;
     --ember:    #e88a4a;
+    --cool:     #7aa9f5;
     --dim:      rgba(244, 236, 220, 0.50);
     --faint:    rgba(244, 236, 220, 0.14);
     --hairline: rgba(244, 236, 220, 0.10);
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     --serif: "Cormorant Garamond", Iowan Old Style, Georgia, serif;
+
+    /* liquid glass recipe (lifted from ios-frame.jsx) */
+    --glass-tint:   rgba(18, 16, 26, 0.38);
+    --glass-blur:   blur(18px) saturate(165%);
+    --glass-border: 0.5px solid rgba(244, 236, 220, 0.14);
+    --glass-shine:  inset 1.2px 1.2px 1px rgba(255, 255, 255, 0.10),
+                    inset -1px -1px 1px rgba(0, 0, 0, 0.28);
+    --glass-drop:   0 24px 70px rgba(0, 0, 0, 0.45);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,31 +42,73 @@
     min-height: 100vh;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-    canvas { display: none; }
-  }
-
-  /* ── canvas bg ── */
+  /* ── living substrate ── */
   canvas#bg {
     position: fixed; inset: 0;
     width: 100vw; height: 100vh;
     z-index: 0; pointer-events: none;
   }
+  /* whole-page breath: a warm bloom that swells with the orb */
+  .breath {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(60% 50% at 78% 24%,
+      rgba(245, 201, 122, calc(0.05 + var(--b, 0.5) * 0.06)), transparent 70%);
+    mix-blend-mode: screen;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    canvas#bg { display: none; }
+    .breath { display: none; }
+  }
+
+  /* ── liquid glass primitive ── */
+  .glass {
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shine), var(--glass-drop);
+    isolation: isolate;
+  }
+  /* edge refraction — light catches the top-left lip */
+  .glass::after {
+    content: '';
+    position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.10), transparent 28%);
+    pointer-events: none; z-index: 2;
+  }
+  /* cursor-tracked specular sheen — the "wet" in wet glass */
+  .glass::before {
+    content: '';
+    position: absolute; inset: -1px; border-radius: inherit;
+    background: radial-gradient(220px circle at var(--mx, 50%) var(--my, -20%),
+      rgba(245, 201, 122, 0.16), rgba(245, 201, 122, 0.05) 30%, transparent 60%);
+    opacity: 0; transition: opacity 450ms ease;
+    pointer-events: none; z-index: 1;
+  }
+  .glass:hover::before { opacity: 1; }
 
   /* ── layout ── */
   main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 48px 160px; }
 
-  /* ── nav ── */
+  /* ── nav (floating glass bar) ── */
+  .nav-wrap {
+    position: sticky; top: 18px; z-index: 30;
+    margin: 18px 0 0;
+  }
   nav {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 28px 0 24px;
-    border-bottom: 1px solid var(--hairline);
-    margin-bottom: 0;
+    padding: 14px 22px;
+    border-radius: 9999px;
   }
   .nav-brand {
     display: flex; gap: 14px; align-items: center;
-    font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--dim);
+    font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink);
+    position: relative; z-index: 3;
   }
   .nav-dot {
     width: 7px; height: 7px; border-radius: 50%;
@@ -72,20 +123,20 @@
   }
   .nav-right {
     font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
+    position: relative; z-index: 3;
   }
 
   /* ── hero ── */
   .hero {
-    padding: 120px 0 100px;
+    padding: 130px 0 110px;
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 80px;
     align-items: end;
-    border-bottom: 1px solid var(--hairline);
   }
   .hero-kicker {
     font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
-    color: var(--dim); margin-bottom: 22px;
+    color: var(--dim); margin-bottom: 24px;
   }
   .hero h1 {
     font-family: var(--serif);
@@ -95,7 +146,7 @@
     line-height: 0.90;
     letter-spacing: -0.03em;
     color: var(--ink);
-    margin-bottom: 0;
+    text-shadow: 0 2px 40px rgba(7, 6, 10, 0.6);
   }
   .hero h1 em { color: var(--warm); font-style: italic; }
   .hero-right { padding-bottom: 6px; }
@@ -107,20 +158,23 @@
     line-height: 1.55;
     color: var(--ink);
     max-width: 34ch;
-    margin-bottom: 36px;
+    margin-bottom: 28px;
   }
   .hero-lede strong { color: var(--warm); font-style: normal; font-weight: 400; }
   .hero-meta {
-    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim); line-height: 2;
+    display: inline-flex; flex-direction: column; gap: 4px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--dim); line-height: 1.9;
   }
+  .hero-meta b { color: var(--warm); font-weight: 400; }
+  .hero-meta > div { position: relative; z-index: 3; }
 
-  /* ── section label ── */
+  /* ── section header ── */
   .section-h {
     display: flex; justify-content: space-between; align-items: baseline;
-    padding: 48px 0 24px;
-    border-bottom: 1px solid var(--hairline);
-    margin-bottom: 0;
+    padding: 56px 0 28px;
   }
   .section-h h2 {
     font-family: var(--serif);
@@ -134,28 +188,31 @@
     font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
   }
 
-  /* ── experience cards ── */
+  /* ── experience cards (glass) ── */
   .experiences {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    border-left: 1px solid var(--hairline);
-    margin-bottom: 0;
+    gap: 18px;
   }
   .exp-card {
     display: flex; flex-direction: column;
-    padding: 36px 32px 32px;
-    border-right: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
+    padding: 34px 32px 30px;
     text-decoration: none;
     color: inherit;
-    position: relative;
-    overflow: hidden;
-    transition: background 300ms ease;
     min-height: 300px;
+    transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1),
+                box-shadow 420ms ease, border-color 420ms ease;
   }
-  .exp-card:hover { background: rgba(244, 236, 220, 0.025); }
+  .exp-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(245, 201, 122, 0.28);
+    box-shadow: var(--glass-shine),
+                0 30px 80px rgba(0, 0, 0, 0.55),
+                0 0 0 1px rgba(245, 201, 122, 0.06);
+  }
   .exp-card:hover .exp-arrow { opacity: 1; transform: translate(0, 0); }
   .exp-card:hover .exp-title { color: var(--warm); }
+  .exp-card > * { position: relative; z-index: 3; }
   .exp-num {
     font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
     color: var(--warm); margin-bottom: 20px;
@@ -174,7 +231,7 @@
   .exp-body {
     font-size: 12px;
     color: var(--dim);
-    line-height: 1.8;
+    line-height: 1.85;
     letter-spacing: 0.02em;
     flex: 1;
     max-width: 42ch;
@@ -192,11 +249,7 @@
     transition: opacity 280ms ease, transform 280ms ease;
     font-size: 16px;
   }
-
-  /* ── wide card (full row) ── */
-  .exp-card.wide {
-    grid-column: span 2;
-  }
+  .exp-card.wide { grid-column: span 2; }
   .exp-card.wide .exp-title { font-size: clamp(36px, 5vw, 72px); }
   .exp-card.wide .exp-body  { max-width: 70ch; }
 
@@ -205,9 +258,10 @@
     display: grid;
     grid-template-columns: 200px 1fr;
     gap: 48px;
-    border-top: 1px solid var(--hairline);
-    padding: 48px 0;
+    padding: 44px 0;
+    border-bottom: 1px solid var(--hairline);
   }
+  .about:first-of-type { border-top: 1px solid var(--hairline); }
   .about-label {
     font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
     color: var(--dim); padding-top: 4px;
@@ -226,25 +280,19 @@
   .about-body strong { color: var(--warm); font-style: normal; font-weight: 400; }
   .about-body em { font-style: normal; color: var(--warm); }
 
-  /* ── flow ── */
-  .flow-wrap {
-    border-top: 1px solid var(--hairline);
-    padding-top: 48px;
-    margin-bottom: 0;
-  }
+  /* ── flow (glass steps) ── */
+  .flow-wrap { padding-top: 56px; }
   .flow {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
+    gap: 14px;
     margin-top: 28px;
   }
   .flow-step {
-    padding: 28px 22px 32px;
-    border-right: 1px solid var(--hairline);
+    padding: 26px 22px 30px;
     display: flex; flex-direction: column;
   }
-  .flow-step:last-child { border-right: 0; }
+  .flow-step > * { position: relative; z-index: 3; }
   .flow-step .n {
     font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
     color: var(--warm); margin-bottom: 16px;
@@ -259,13 +307,14 @@
     font-size: 11px; color: var(--dim); line-height: 1.8;
   }
 
-  /* ── creed / footer ── */
+  /* ── creed ── */
   .creed {
-    padding: 120px 0 80px;
+    padding: 130px 40px 90px;
     text-align: center;
-    border-top: 1px solid var(--hairline);
-    margin-top: 100px;
+    margin-top: 90px;
+    border-radius: 28px;
   }
+  .creed > * { position: relative; z-index: 3; }
   .creed .glyph {
     font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase;
     color: var(--warm); margin-bottom: 32px;
@@ -288,35 +337,34 @@
   /* ── responsive ── */
   @media (max-width: 900px) {
     main { padding: 0 22px 100px; }
-    .hero { grid-template-columns: 1fr; gap: 36px; padding: 80px 0 72px; }
+    .hero { grid-template-columns: 1fr; gap: 36px; padding: 90px 0 72px; }
     .experiences { grid-template-columns: 1fr; }
     .exp-card.wide { grid-column: span 1; }
     .about { grid-template-columns: 1fr; gap: 18px; }
     .flow { grid-template-columns: 1fr 1fr; }
-    .flow-step:nth-child(2) { border-right: 0; }
-    .flow-step:nth-child(1),
-    .flow-step:nth-child(2) { border-bottom: 1px solid var(--hairline); }
   }
   @media (max-width: 540px) {
     .flow { grid-template-columns: 1fr; }
-    .flow-step { border-right: 0; border-bottom: 1px solid var(--hairline); }
-    .flow-step:last-child { border-bottom: 0; }
+    nav { padding: 12px 18px; }
   }
 </style>
 </head>
 <body>
 <canvas id="bg" aria-hidden="true"></canvas>
+<div class="breath" aria-hidden="true"></div>
 
 <main>
 
   <!-- NAV -->
-  <nav>
-    <div class="nav-brand">
-      <div class="nav-dot"></div>
-      <span>DDUP &nbsp;·&nbsp; DOMAINEX</span>
-    </div>
-    <div class="nav-right">v0.1 &nbsp;/&nbsp; treatment</div>
-  </nav>
+  <div class="nav-wrap">
+    <nav class="glass">
+      <div class="nav-brand">
+        <div class="nav-dot"></div>
+        <span>DDUP &nbsp;·&nbsp; DOMAINEX</span>
+      </div>
+      <div class="nav-right">v0.1 &nbsp;/&nbsp; treatment</div>
+    </nav>
+  </div>
 
   <!-- HERO -->
   <section class="hero">
@@ -329,10 +377,10 @@
         A theme that <strong>breathes</strong>. An autonomous companion living quietly in the background of your device —
         aging when you age, vibing when you vibe, doing the thing you should be doing when you aren't.
       </p>
-      <div class="hero-meta">
-        <div>not an app &nbsp;·&nbsp; the wallpaper</div>
-        <div>8 stages &nbsp;·&nbsp; 14 coming</div>
-        <div>ships monthly &nbsp;·&nbsp; never repeats</div>
+      <div class="hero-meta glass">
+        <div><b>not an app</b> &nbsp;·&nbsp; the wallpaper</div>
+        <div><b>8 stages</b> &nbsp;·&nbsp; 14 coming</div>
+        <div><b>ships monthly</b> &nbsp;·&nbsp; never repeats</div>
       </div>
     </div>
   </section>
@@ -345,7 +393,7 @@
 
   <div class="experiences">
 
-    <a class="exp-card wide" href="welcome/wzxa.html">
+    <a class="exp-card glass wide" href="welcome/wzxa.html">
       <div class="exp-num">001 &nbsp;treatment</div>
       <div class="exp-title">WZXA &mdash; full concept</div>
       <div class="exp-body">
@@ -358,7 +406,7 @@
       </div>
     </a>
 
-    <a class="exp-card" href="welcome/wzxa-lockscreen.html">
+    <a class="exp-card glass" href="welcome/wzxa-lockscreen.html">
       <div class="exp-num">002 &nbsp;prototype</div>
       <div class="exp-title">lockscreen</div>
       <div class="exp-body">
@@ -371,7 +419,7 @@
       </div>
     </a>
 
-    <a class="exp-card" href="welcome/endlessly.html">
+    <a class="exp-card glass" href="welcome/endlessly.html">
       <div class="exp-num">003 &nbsp;motion</div>
       <div class="exp-title">endlessly</div>
       <div class="exp-body">
@@ -384,7 +432,7 @@
       </div>
     </a>
 
-    <a class="exp-card" href="welcome/hello-goodbye.html">
+    <a class="exp-card glass" href="welcome/hello-goodbye.html">
       <div class="exp-num">004 &nbsp;meditation</div>
       <div class="exp-title">hello,&nbsp; goodbye.</div>
       <div class="exp-body">
@@ -445,26 +493,26 @@
 
   <!-- SYSTEM FLOW -->
   <div class="flow-wrap">
-    <div class="section-h" style="border-top:0; padding-top: 0;">
+    <div class="section-h" style="padding-top: 0;">
       <h2>how he runs.</h2>
     </div>
     <div class="flow">
-      <div class="flow-step">
+      <div class="flow-step glass">
         <div class="n">001 &nbsp;sense</div>
         <div class="t">read the surface</div>
         <div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div>
       </div>
-      <div class="flow-step">
+      <div class="flow-step glass">
         <div class="n">002 &nbsp;mirror</div>
         <div class="t">do what you do</div>
         <div class="d">when you're working, he's working. when you're silent, he speaks.</div>
       </div>
-      <div class="flow-step">
+      <div class="flow-step glass">
         <div class="n">003 &nbsp;diverge</div>
         <div class="t">do what you don't</div>
         <div class="d">when you stop, he picks up. coding. praying. moving without you.</div>
       </div>
-      <div class="flow-step">
+      <div class="flow-step glass">
         <div class="n">004 &nbsp;return</div>
         <div class="t">become you again</div>
         <div class="d">at the next breath, he folds back to where you are. the background settles.</div>
@@ -473,7 +521,7 @@
   </div>
 
   <!-- CREED -->
-  <section class="creed">
+  <section class="creed glass">
     <div class="glyph">M · E · B</div>
     <div class="line">to be perfect is to be what is:<br/><em>past, present, future = perfect.</em></div>
     <div class="signoff">ddup &nbsp;·&nbsp; domainex &nbsp;·&nbsp; no doubt</div>
@@ -483,59 +531,101 @@
 
 <script>
 (() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── cursor-tracked specular light on every glass surface ──
+  const glassEls = document.querySelectorAll('.glass');
+  function trackLight(e) {
+    const x = e.clientX, y = e.clientY;
+    for (const el of glassEls) {
+      const r = el.getBoundingClientRect();
+      if (x < r.left - 40 || x > r.right + 40 || y < r.top - 40 || y > r.bottom + 40) continue;
+      el.style.setProperty('--mx', (x - r.left) + 'px');
+      el.style.setProperty('--my', (y - r.top) + 'px');
+    }
+  }
+  addEventListener('pointermove', trackLight, { passive: true });
+
+  if (reduce) return; // canvas + breath are hidden; skip the loop entirely
+
+  // ── living substrate: color blooms + particle field behind the glass ──
   const canvas = document.getElementById('bg');
   const ctx = canvas.getContext('2d');
+  const breathEl = document.querySelector('.breath');
   let W, H, DPR = Math.min(devicePixelRatio || 1, 2);
 
   function resize() {
     W = innerWidth; H = innerHeight;
-    canvas.width  = W * DPR; canvas.height = H * DPR;
+    canvas.width = W * DPR; canvas.height = H * DPR;
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   resize();
   addEventListener('resize', resize);
 
-  const N = 120;
+  // large soft blooms — frosted glass needs broad color to refract, not pinpoints
+  const blooms = [
+    { hx: 0.80, hy: 0.22, rad: 0.55, col: [245, 201, 122], amp: 0.14, sp: 0.00041, ph: 0 },
+    { hx: 0.18, hy: 0.62, rad: 0.50, col: [232, 138,  74], amp: 0.10, sp: 0.00033, ph: 2.1 },
+    { hx: 0.55, hy: 0.92, rad: 0.62, col: [122, 169, 245], amp: 0.06, sp: 0.00027, ph: 4.2 },
+  ];
+
+  const N = 110;
   const ps = [];
   for (let i = 0; i < N; i++) {
     ps.push({
-      a:     Math.random() * Math.PI * 2,
-      r:     Math.random(),
-      seed:  Math.random(),
+      a: Math.random() * Math.PI * 2,
+      r: Math.random(),
+      seed: Math.random(),
       phase: Math.random() * Math.PI * 2,
-      size:  0.4 + Math.random() * 1.1,
+      size: 0.4 + Math.random() * 1.1,
     });
   }
 
   function frame(now) {
-    ctx.fillStyle = 'rgba(7, 6, 10, 0.18)';
+    ctx.fillStyle = 'rgba(7, 6, 10, 0.20)';
     ctx.fillRect(0, 0, W, H);
 
-    const cx = W * 0.80, cy = H * 0.26;
-    const breath = 0.55 + Math.sin(now * 0.00055) * 0.45;
-    const R = Math.min(W, H) * 0.30;
+    const breath = 0.5 + Math.sin(now * 0.00045) * 0.5;
+    // drive the whole-page breath bloom
+    breathEl.style.setProperty('--b', breath.toFixed(3));
 
+    // color blooms
+    ctx.globalCompositeOperation = 'lighter';
+    for (const bl of blooms) {
+      const pulse = 0.7 + Math.sin(now * bl.sp + bl.ph) * 0.3;
+      const cx = (bl.hx + Math.sin(now * bl.sp * 0.6 + bl.ph) * 0.04) * W;
+      const cy = (bl.hy + Math.cos(now * bl.sp * 0.5 + bl.ph) * 0.04) * H;
+      const rad = bl.rad * Math.min(W, H) * (0.8 + breath * 0.4) * pulse;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+      const [r, gg, b] = bl.col;
+      g.addColorStop(0, `rgba(${r}, ${gg}, ${b}, ${bl.amp * pulse})`);
+      g.addColorStop(1, `rgba(${r}, ${gg}, ${b}, 0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // particle orb (top-right, the WZXA heartbeat)
+    const ocx = W * 0.80, ocy = H * 0.24;
+    const R = Math.min(W, H) * 0.30;
     for (let i = 0; i < N; i++) {
       const p = ps[i];
-      const a   = p.a + now * 0.000055 * (p.seed - 0.5);
-      const r   = p.r * R * (0.25 + breath * 0.9);
+      const a = p.a + now * 0.00005 * (p.seed - 0.5);
+      const r = p.r * R * (0.3 + breath * 0.9);
       const wob = Math.sin(now * 0.00075 + p.phase) * 5;
-      const x   = cx + Math.cos(a) * r + wob;
-      const y   = cy + Math.sin(a) * r * 0.82;
-
+      const x = ocx + Math.cos(a) * r + wob;
+      const y = ocy + Math.sin(a) * r * 0.82;
       const warmth = 0.3 + p.seed * 0.5;
-      const ri = 245, gi = Math.round(201 + (236 - 201) * (1 - warmth)), bi = Math.round(122 + (220 - 122) * (1 - warmth));
-      ctx.fillStyle = `rgba(${ri}, ${gi}, ${bi}, ${0.35 + p.seed * 0.38})`;
+      const ri = 245, gi = Math.round(201 + 35 * (1 - warmth)), bi = Math.round(122 + 98 * (1 - warmth));
+      ctx.fillStyle = `rgba(${ri}, ${gi}, ${bi}, ${0.30 + p.seed * 0.35})`;
       ctx.beginPath();
       ctx.arc(x, y, p.size * (0.8 + (1 - breath) * 0.6), 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.fillStyle = `rgba(${ri}, ${gi}, ${bi}, 0.03)`;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size * 7, 0, Math.PI * 2);
-      ctx.fill();
     }
+    ctx.globalCompositeOperation = 'source-over';
+
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

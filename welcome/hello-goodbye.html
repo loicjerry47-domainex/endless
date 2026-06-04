@@ -2,161 +2,60 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>hello, world / goodbye, world</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>hello, goodbye — DDUP · DOMAINEX</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/css/system.css" />
 <style>
-  :root {
-    --bg: #0a0908;
-    --ink: #f2ece1;
-    --dim: rgba(242, 236, 225, 0.45);
-    --faint: rgba(242, 236, 225, 0.18);
-    --warm: #f4c97a;
-    --mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
-    --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  }
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+  html, body { height: 100%; overflow: hidden; }
   body { font-family: var(--mono); }
 
-  canvas {
-    position: fixed; inset: 0;
-    width: 100vw; height: 100vh;
-    display: block;
-  }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 
-  .ui {
-    position: fixed; inset: 0;
-    pointer-events: none;
-    display: flex; flex-direction: column; justify-content: space-between;
-    padding: 36px 40px;
-  }
+  .ui { position: fixed; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 36px 40px; }
 
-  .top {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--dim);
-  }
-
-  .top .label {
-    transition: color 600ms ease;
-  }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .top .label { transition: color 600ms ease; }
   .top .label.active { color: var(--ink); }
+  .top .scene-num { font-variant-numeric: tabular-nums; }
 
-  .top .scene-num {
-    font-variant-numeric: tabular-nums;
-  }
+  .center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 8vw; position: relative; }
 
-  .center {
-    flex: 1;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    text-align: center;
-    padding: 0 8vw;
-    position: relative;
-  }
-
-  .scene-title {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 400;
-    font-size: clamp(48px, 8vw, 120px);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 1.2s ease, transform 1.2s ease;
-    margin-bottom: 28px;
-  }
+  .scene-title { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(48px, 8vw, 120px); line-height: 1; letter-spacing: -0.02em; color: var(--ink); opacity: 0; transform: translateY(20px); transition: opacity 1.2s ease, transform 1.2s ease; margin-bottom: 28px; }
   .scene-title.show { opacity: 1; transform: translateY(0); }
 
-  .scene-body {
-    font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.9;
-    letter-spacing: 0.02em;
-    color: var(--dim);
-    max-width: 540px;
-    opacity: 0;
-    transition: opacity 1.6s ease 0.4s;
-  }
+  .scene-body { font-family: var(--mono); font-size: 13px; line-height: 1.9; letter-spacing: 0.02em; color: var(--dim); max-width: 540px; opacity: 0; transition: opacity 1.6s ease 0.4s; }
   .scene-body.show { opacity: 1; }
+  .scene-body em { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink); }
 
-  .scene-body em {
-    font-family: var(--serif);
-    font-style: italic;
-    font-size: 16px;
-    color: var(--ink);
-  }
+  .bottom { display: flex; justify-content: space-between; align-items: flex-end; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--dim); pointer-events: auto; }
 
-  .bottom {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
-    color: var(--dim);
-    pointer-events: auto;
-  }
-
-  .nav {
-    display: flex; gap: 4px;
-  }
+  .nav { display: flex; gap: 4px; }
   .nav button {
     pointer-events: auto;
-    background: transparent;
-    border: 1px solid var(--faint);
+    background: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
     color: var(--dim);
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: all 350ms ease;
-    border-radius: 1px;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 10px 16px; cursor: pointer;
+    transition: color 350ms ease, background 350ms ease, border-color 350ms ease;
+    border-radius: 9999px;
   }
-  .nav button:hover {
-    color: var(--ink);
-    border-color: var(--dim);
-  }
-  .nav button.active {
-    color: var(--bg);
-    background: var(--ink);
-    border-color: var(--ink);
-  }
+  .nav button:hover { color: var(--ink); border-color: rgba(245, 201, 122, 0.4); }
+  .nav button.active { color: var(--bg); background: var(--ink); border-color: var(--ink); }
 
-  .hint {
-    color: var(--faint);
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    text-align: right;
-    line-height: 1.6;
-  }
+  .hint { color: var(--faint); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; text-align: right; line-height: 1.6; }
 
-  .progress {
-    position: fixed;
-    left: 40px; right: 40px;
-    bottom: 100px;
-    height: 1px;
-    background: var(--faint);
-    pointer-events: none;
-  }
-  .progress .fill {
-    height: 100%;
-    background: var(--ink);
-    width: 0%;
-    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  .progress { position: fixed; left: 40px; right: 40px; bottom: 100px; height: 1px; background: var(--faint); pointer-events: none; }
+  .progress .fill { height: 100%; background: var(--ink); width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
 
-  .glyph {
-    font-family: var(--mono);
-    color: var(--warm);
-    opacity: 0.7;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    margin-bottom: 24px;
-    opacity: 0;
-    transition: opacity 1s ease;
-  }
+  .glyph { font-family: var(--mono); color: var(--warm); opacity: 0.7; font-size: 11px; letter-spacing: 0.15em; margin-bottom: 24px; opacity: 0; transition: opacity 1s ease; }
   .glyph.show { opacity: 0.7; }
 
   @media (max-width: 640px) {
@@ -209,35 +108,27 @@
   resize();
   window.addEventListener('resize', resize);
 
-  // ---------- particles ----------
   const N = 280;
   const particles = [];
   for (let i = 0; i < N; i++) {
     const a = Math.random() * Math.PI * 2;
     const r = Math.random();
     particles.push({
-      // current
       x: Math.cos(a) * r * 8,
       y: Math.sin(a) * r * 8,
-      // target
       tx: 0, ty: 0,
-      // velocity for damping
       vx: 0, vy: 0,
-      // visual
       size: 0.6 + Math.random() * 1.4,
-      hue: Math.random(),       // 0-1 used to mix warm
+      hue: Math.random(),
       phase: Math.random() * Math.PI * 2,
       seed: Math.random(),
     });
   }
 
-  // scene assigners — set tx/ty based on scene + time
   function assignTargets(scene, t) {
     const cx = W / 2, cy = H / 2;
     const R = Math.min(W, H);
-
     if (scene === 0) {
-      // HELLO WORLD: a single tight point with a faint breath
       for (let i = 0; i < N; i++) {
         const p = particles[i];
         const a = (i / N) * Math.PI * 2 + p.seed * 0.4;
@@ -247,7 +138,6 @@
         p.ty = cy + Math.sin(a) * r;
       }
     } else if (scene === 1) {
-      // IN BETWEEN: spreading constellation, organic drift
       for (let i = 0; i < N; i++) {
         const p = particles[i];
         const a = p.seed * Math.PI * 2 + t * 0.00005 * (p.hue - 0.5);
@@ -257,11 +147,9 @@
         p.ty = cy + Math.sin(a) * radius * 0.78 + wobble * 0.6;
       }
     } else {
-      // GOODBYE WORLD: dense gathered core, slow outward drift
       for (let i = 0; i < N; i++) {
         const p = particles[i];
         const a = p.seed * Math.PI * 2 + t * 0.00008;
-        // gathered cluster but with a slow expansion of older ones
         const drift = (p.seed * t * 0.000018) % 1;
         const radius = (0.05 + p.seed * 0.18) * R * (0.6 + drift * 1.3);
         p.tx = cx + Math.cos(a) * radius;
@@ -270,30 +158,22 @@
     }
   }
 
-  // ---------- render ----------
   let scene = 0;
   let lastSceneSwitch = performance.now();
 
   function lerpColor(t) {
-    // ink → warm at t=1
     const ink = [242, 236, 225];
     const warm = [244, 201, 122];
-    return [
-      ink[0] + (warm[0] - ink[0]) * t,
-      ink[1] + (warm[1] - ink[1]) * t,
-      ink[2] + (warm[2] - ink[2]) * t,
-    ];
+    return [ink[0] + (warm[0] - ink[0]) * t, ink[1] + (warm[1] - ink[1]) * t, ink[2] + (warm[2] - ink[2]) * t];
   }
 
   function draw(now) {
     const t = now;
     assignTargets(scene, t);
 
-    // trailing fade
     ctx.fillStyle = 'rgba(10, 9, 8, 0.18)';
     ctx.fillRect(0, 0, W, H);
 
-    // damp toward targets
     for (let i = 0; i < N; i++) {
       const p = particles[i];
       const dx = p.tx - p.x;
@@ -304,12 +184,11 @@
       p.y += p.vy;
     }
 
-    // connections — only in scene 1 (in between)
     if (scene === 1) {
       ctx.lineWidth = 0.4;
       for (let i = 0; i < N; i++) {
         const a = particles[i];
-        for (let j = i + 1; j < N; j++) {
+        for (let j = i + 1; j < i + 16 && j < N; j++) {
           const b = particles[j];
           const dx = a.x - b.x, dy = a.y - b.y;
           const d2 = dx * dx + dy * dy;
@@ -325,7 +204,6 @@
       }
     }
 
-    // particles
     for (let i = 0; i < N; i++) {
       const p = particles[i];
       let warmth = 0;
@@ -351,7 +229,6 @@
       ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
       ctx.fill();
 
-      // soft halo on goodbye
       if (scene === 2) {
         ctx.fillStyle = `rgba(${r|0}, ${g|0}, ${b|0}, ${alpha * 0.06})`;
         ctx.beginPath();
@@ -364,26 +241,10 @@
   }
   requestAnimationFrame(draw);
 
-  // ---------- scenes ----------
   const scenes = [
-    {
-      glyph: '> _',
-      title: 'hello, world',
-      body: 'A single point of signal. The smallest possible proof that something is alive enough to address the void. <em>I am here. Are you?</em><br/><br/>Two words, weightless. Everything that follows will be the elaboration of this one breath.',
-      label: 'the seed',
-    },
-    {
-      glyph: '// running',
-      title: 'the in&nbsp;between',
-      body: 'The seed branches. Loops form. Errors caught. Features added at 4:32am. Connections nobody planned for.<br/><br/>This is where the mass accumulates &mdash; <em>where the hello earns its goodbye.</em>',
-      label: 'the elaboration',
-    },
-    {
-      glyph: '> end',
-      title: 'goodbye, world',
-      body: 'Everything the hello started, gathered. Not loss &mdash; <em>accounting.</em><br/><br/>The point of light returns, but heavier now, holding all of it. The richer the hello, the heavier &mdash; and more meaningful &mdash; the goodbye.',
-      label: 'the harvest',
-    },
+    { glyph: '> _', title: 'hello, world', body: 'A single point of signal. The smallest possible proof that something is alive enough to address the void. <em>I am here. Are you?</em><br/><br/>Two words, weightless. Everything that follows will be the elaboration of this one breath.', label: 'the seed' },
+    { glyph: '// running', title: 'the in&nbsp;between', body: 'The seed branches. Loops form. Errors caught. Features added at 4:32am. Connections nobody planned for.<br/><br/>This is where the mass accumulates &mdash; <em>where the hello earns its goodbye.</em>', label: 'the elaboration' },
+    { glyph: '> end', title: 'goodbye, world', body: 'Everything the hello started, gathered. Not loss &mdash; <em>accounting.</em><br/><br/>The point of light returns, but heavier now, holding all of it. The richer the hello, the heavier &mdash; and more meaningful &mdash; the goodbye.', label: 'the harvest' },
   ];
 
   const titleEl = document.getElementById('title');
@@ -427,16 +288,13 @@
     });
   });
 
-  document.body.addEventListener('click', () => {
-    setScene((scene + 1) % 3);
-  });
+  document.body.addEventListener('click', () => { setScene((scene + 1) % 3); });
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.key === ' ') setScene((scene + 1) % 3);
     if (e.key === 'ArrowLeft') setScene((scene + 2) % 3);
   });
 
-  // initial
   setTimeout(() => setScene(0), 200);
 })();
 </script>

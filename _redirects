@@ -1,0 +1,8 @@
+# clean URLs
+/wzxa        /welcome/wzxa.html        200
+/lockscreen  /welcome/wzxa-lockscreen.html  200
+/endlessly   /welcome/endlessly.html   200
+/hello       /welcome/hello-goodbye.html  200
+
+# legacy
+/welcome     /                          301

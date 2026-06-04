@@ -1,0 +1,12 @@
+{
+  "name": "DDUP · DOMAINEX",
+  "short_name": "endless",
+  "description": "A background companion that lives on your device.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07060a",
+  "theme_color": "#f5c97a",
+  "icons": [
+    { "src": "/assets/favicon.svg", "type": "image/svg+xml", "sizes": "any" }
+  ]
+}

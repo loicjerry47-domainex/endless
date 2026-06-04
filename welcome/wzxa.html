@@ -2,26 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>WZXA — a background companion</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WZXA — DDUP · DOMAINEX</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/css/system.css" />
 <style>
-  :root {
-    --bg: #07060a;
-    --bg-soft: #0e0c14;
-    --ink: #f4ecdc;
-    --warm: #f5c97a;
-    --ember: #e88a4a;
-    --cool: #7aa9f5;
-    --dim: rgba(244, 236, 220, 0.50);
-    --faint: rgba(244, 236, 220, 0.14);
-    --hairline: rgba(244, 236, 220, 0.10);
-    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --serif: "Cormorant Garamond", Iowan Old Style, Georgia, serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--bg); color: var(--ink); }
   body {
     font-family: var(--mono);
     font-size: 13px;
@@ -152,12 +140,7 @@
   /* --- onboarding panel --- */
   .panel {
     margin-top: 48px;
-    border: 1px solid var(--hairline);
-    background: rgba(14, 12, 20, 0.6);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     padding: 32px 36px;
-    border-radius: 2px;
   }
   .panel-h {
     display: flex; justify-content: space-between; align-items: center;
@@ -190,7 +173,8 @@
     cursor: pointer;
     user-select: none;
     transition: all 200ms ease;
-    border-radius: 1px;
+    border-radius: 9999px;
+    background: rgba(244, 236, 220, 0.02);
   }
   .chip:hover { color: var(--ink); border-color: var(--dim); }
   .chip.active {
@@ -355,17 +339,13 @@
   .flow {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    border-top: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
+    gap: 14px;
   }
   .flow .step {
     padding: 24px 22px;
-    border-right: 1px solid var(--hairline);
     min-height: 200px;
     display: flex; flex-direction: column;
   }
-  .flow .step:last-child { border-right: 0; }
   .flow .step .n {
     font-family: var(--mono); font-size: 10px;
     letter-spacing: 0.22em; color: var(--warm);
@@ -421,8 +401,6 @@
     .block { grid-template-columns: 1fr; gap: 18px; }
     .stage-card { grid-template-columns: 1fr; gap: 32px; }
     .flow { grid-template-columns: 1fr 1fr; }
-    .flow .step:nth-child(2) { border-right: 0; }
-    .flow .step:nth-child(1), .flow .step:nth-child(2) { border-bottom: 1px solid var(--hairline); }
     .field { grid-template-columns: 1fr; gap: 8px; }
     .stage-ticks { flex-wrap: wrap; gap: 8px; }
     .stage-ticks .tick { flex: 0 0 calc(33.33% - 8px); }
@@ -444,7 +422,7 @@
   <!-- HERO -->
   <section class="hero">
     <div>
-      <div class="codename">codename WZXA &nbsp;·&nbsp; the niggod is vibing</div>
+      <div class="codename">codename WZXA &nbsp;·&nbsp; the background is vibing</div>
       <h1>he lives <span class="ampersand">&amp;</span><br/>so do you.</h1>
     </div>
     <p class="lede">
@@ -466,7 +444,7 @@
     <div class="body">
       <p>Six choices made once, at install. They calibrate the whole organism. Pick honestly — WZXA only works at the resolution of the truth you give him.</p>
 
-      <div class="panel" id="onboard">
+      <div class="panel glass" id="onboard" style="border-radius: 18px;">
         <div class="panel-h">
           <span>install &middot; calibration</span>
           <span class="right" id="onboardStatus">awaiting input</span>
@@ -530,7 +508,7 @@
   <section class="timeline-wrap">
     <div class="timeline-h">
       <h2>he ages with you.</h2>
-      <div class="meta">stages &nbsp;·&nbsp; 8 of 14</div>
+      <div class="meta">stages &nbsp;·&nbsp; 8 of 8</div>
     </div>
 
     <div class="stage-rail">
@@ -544,22 +522,22 @@
   <section class="system">
     <h3>how he runs.</h3>
     <div class="flow">
-      <div class="step">
+      <div class="step glass">
         <div class="n">001 &nbsp;sense</div>
         <div class="t">read the surface</div>
         <div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div>
       </div>
-      <div class="step">
+      <div class="step glass">
         <div class="n">002 &nbsp;mirror</div>
         <div class="t">do what you do</div>
         <div class="d">when you're working, he's working. when you're silent, he speaks.</div>
       </div>
-      <div class="step">
+      <div class="step glass">
         <div class="n">003 &nbsp;diverge</div>
         <div class="t">do what you don't</div>
         <div class="d">when you stop, he picks up. coding. blunting. praying. moving without you.</div>
       </div>
-      <div class="step">
+      <div class="step glass">
         <div class="n">004 &nbsp;return</div>
         <div class="t">become you again</div>
         <div class="d">at the next breath, he folds back to where you are. the background settles.</div>
@@ -592,65 +570,11 @@
   </section>
 </main>
 
-<script>
-// --- background canvas: a single warm orb that breathes (links to endlessly) ---
-(() => {
-  const canvas = document.getElementById('bg');
-  const ctx = canvas.getContext('2d');
-  let W, H, DPR = Math.min(devicePixelRatio || 1, 2);
-  function resize() {
-    W = innerWidth; H = innerHeight;
-    canvas.width = W * DPR; canvas.height = H * DPR;
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-  resize();
-  addEventListener('resize', resize);
-
-  const N = 140;
-  const ps = [];
-  for (let i = 0; i < N; i++) {
-    ps.push({
-      a: Math.random() * Math.PI * 2,
-      r: Math.random(),
-      seed: Math.random(),
-      phase: Math.random() * Math.PI * 2,
-      size: 0.4 + Math.random() * 1.2,
-    });
-  }
-
-  function frame(now) {
-    ctx.fillStyle = 'rgba(7, 6, 10, 0.16)';
-    ctx.fillRect(0, 0, W, H);
-
-    const cx = W * 0.78, cy = H * 0.32;
-    const breath = 0.6 + Math.sin(now * 0.0006) * 0.4;
-    const R = Math.min(W, H) * 0.32;
-
-    for (let i = 0; i < N; i++) {
-      const p = ps[i];
-      const a = p.a + now * 0.00006 * (p.seed - 0.5);
-      const r = p.r * R * (0.3 + breath * 0.9);
-      const wob = Math.sin(now * 0.0008 + p.phase) * 6;
-      const x = cx + Math.cos(a) * r + wob;
-      const y = cy + Math.sin(a) * r * 0.85;
-
-      const warmth = 0.3 + p.seed * 0.5;
-      const ir = 245, ig = Math.round(201 + (236 - 201) * (1 - warmth)), ib = Math.round(122 + (220 - 122) * (1 - warmth));
-      ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, ${0.4 + p.seed * 0.4})`;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size * (0.8 + (1 - breath) * 0.6), 0, Math.PI * 2);
-      ctx.fill();
-
-      // halo
-      ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, 0.04)`;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size * 7, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+<script type="module">
+  import { initGlass } from '/assets/js/glass.js';
+  import { mountSubstrate } from '/assets/js/substrate.js';
+  initGlass();
+  mountSubstrate(document.getElementById('bg'), { orb: { cx: 0.78, cy: 0.32, rad: 0.32 }, blooms: false, particles: 140 });
 })();
 
 // --- onboarding chips ---

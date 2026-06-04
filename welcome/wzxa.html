@@ -2,427 +2,92 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>WZXA — a background companion</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WZXA — DDUP · DOMAINEX</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/css/system.css" />
 <style>
-  :root {
-    --bg: #07060a;
-    --bg-soft: #0e0c14;
-    --ink: #f4ecdc;
-    --warm: #f5c97a;
-    --ember: #e88a4a;
-    --cool: #7aa9f5;
-    --dim: rgba(244, 236, 220, 0.50);
-    --faint: rgba(244, 236, 220, 0.14);
-    --hairline: rgba(244, 236, 220, 0.10);
-    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --serif: "Cormorant Garamond", Iowan Old Style, Georgia, serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--bg); color: var(--ink); }
-  body {
-    font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.7;
-    overflow-x: hidden;
-    min-height: 100vh;
-  }
+  body { font-family: var(--mono); font-size: 13px; line-height: 1.7; overflow-x: hidden; min-height: 100vh; }
+  canvas.substrate { view-transition-name: orb; }
 
-  canvas#bg {
-    position: fixed; inset: 0;
-    width: 100vw; height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-  }
+  main { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 64px 48px 120px; }
 
-  main {
-    position: relative;
-    z-index: 1;
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 64px 48px 120px;
-  }
+  .marquee { display: flex; justify-content: space-between; align-items: flex-start; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); border-bottom: 1px solid var(--hairline); padding-bottom: 18px; margin-bottom: 80px; }
+  .marquee .brand { display: flex; gap: 14px; align-items: center; }
+  .marquee .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 14px var(--warm); }
 
-  /* --- header --- */
-  .marquee {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim);
-    border-bottom: 1px solid var(--hairline);
-    padding-bottom: 18px;
-    margin-bottom: 80px;
-  }
-  .marquee .brand {
-    display: flex; gap: 14px; align-items: center;
-  }
-  .marquee .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--warm);
-    box-shadow: 0 0 14px var(--warm);
-    animation: pulse 3.6s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.55; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.25); }
-  }
+  .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 64px; margin-bottom: 120px; align-items: end; }
+  .hero h1 { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(56px, 9vw, 140px); line-height: 0.92; letter-spacing: -0.03em; color: var(--ink); }
+  .hero h1 .ampersand { color: var(--warm); font-style: italic; }
+  .hero .codename { font-family: var(--mono); font-size: 11px; letter-spacing: 0.4em; color: var(--dim); text-transform: uppercase; margin-bottom: 18px; }
+  .hero p.lede { font-family: var(--serif); font-size: 22px; line-height: 1.5; color: var(--ink); font-style: italic; font-weight: 300; max-width: 36ch; }
+  .hero p.lede em { font-style: normal; color: var(--warm); }
 
-  /* --- hero --- */
-  .hero {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 64px;
-    margin-bottom: 120px;
-    align-items: end;
-  }
-  .hero h1 {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(56px, 9vw, 140px);
-    line-height: 0.92;
-    letter-spacing: -0.03em;
-    color: var(--ink);
-  }
-  .hero h1 .ampersand {
-    color: var(--warm);
-    font-style: italic;
-  }
-  .hero .codename {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.4em;
-    color: var(--dim);
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
-  .hero p.lede {
-    font-family: var(--serif);
-    font-size: 22px;
-    line-height: 1.5;
-    color: var(--ink);
-    font-style: italic;
-    font-weight: 300;
-    max-width: 36ch;
-  }
-  .hero p.lede em {
-    font-style: normal;
-    color: var(--warm);
-  }
-
-  /* --- two-col block --- */
-  .block {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 48px;
-    border-top: 1px solid var(--hairline);
-    padding-top: 32px;
-    margin-bottom: 48px;
-  }
-  .block .label {
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim);
-  }
-  .block .label .num {
-    color: var(--warm);
-    margin-right: 8px;
-  }
-  .block .body {
-    font-family: var(--serif);
-    font-size: 19px;
-    line-height: 1.55;
-    color: var(--ink);
-    font-weight: 300;
-    max-width: 60ch;
-  }
+  .block { display: grid; grid-template-columns: 220px 1fr; gap: 48px; border-top: 1px solid var(--hairline); padding-top: 32px; margin-bottom: 48px; }
+  .block .label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
+  .block .label .num { color: var(--warm); margin-right: 8px; }
+  .block .body { font-family: var(--serif); font-size: 19px; line-height: 1.55; color: var(--ink); font-weight: 300; max-width: 60ch; }
   .block .body p + p { margin-top: 14px; }
-  .block .body .mono {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--dim);
-    letter-spacing: 0.05em;
-  }
-  .block .body strong {
-    color: var(--warm);
-    font-weight: 400;
-    font-style: normal;
-  }
+  .block .body .mono { font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.05em; }
+  .block .body strong { color: var(--warm); font-weight: 400; font-style: normal; }
 
-  /* --- onboarding panel --- */
-  .panel {
-    margin-top: 48px;
-    border: 1px solid var(--hairline);
-    background: rgba(14, 12, 20, 0.6);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    padding: 32px 36px;
-    border-radius: 2px;
-  }
-  .panel-h {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 22px;
-  }
+  .panel { margin-top: 48px; padding: 32px 36px; }
+  .panel-h { display: flex; justify-content: space-between; align-items: center; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); margin-bottom: 22px; }
   .panel-h .right { color: var(--warm); }
-  .field {
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    gap: 18px;
-    align-items: center;
-    padding: 14px 0;
-    border-top: 1px solid var(--hairline);
-  }
+  .field { display: grid; grid-template-columns: 160px 1fr; gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hairline); }
   .field:first-of-type { border-top: 0; }
-  .field .k {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--dim); letter-spacing: 0.18em; text-transform: uppercase;
-  }
-  .field .v {
-    display: flex; gap: 6px; flex-wrap: wrap;
-  }
-  .chip {
-    font-family: var(--mono); font-size: 11px;
-    padding: 6px 12px;
-    border: 1px solid var(--hairline);
-    color: var(--dim);
-    cursor: pointer;
-    user-select: none;
-    transition: all 200ms ease;
-    border-radius: 1px;
-  }
+  .field .k { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 0.18em; text-transform: uppercase; }
+  .field .v { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-family: var(--mono); font-size: 11px; padding: 6px 12px; border: 1px solid var(--hairline); color: var(--dim); cursor: pointer; user-select: none; transition: all 200ms ease; border-radius: 9999px; background: rgba(244,236,220,0.02); }
   .chip:hover { color: var(--ink); border-color: var(--dim); }
-  .chip.active {
-    background: var(--ink); color: var(--bg); border-color: var(--ink);
-  }
+  .chip.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-  /* --- timeline --- */
-  .timeline-wrap {
-    margin-top: 100px;
-    margin-bottom: 80px;
-  }
-  .timeline-h {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 28px;
-  }
-  .timeline-h h2 {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(36px, 5vw, 64px);
-    color: var(--ink);
-    letter-spacing: -0.02em;
-  }
-  .timeline-h .meta {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim);
-  }
+  .timeline-wrap { margin-top: 100px; margin-bottom: 80px; }
+  .timeline-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 28px; }
+  .timeline-h h2 { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(36px, 5vw, 64px); color: var(--ink); letter-spacing: -0.02em; }
+  .timeline-h .meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
 
-  .stage-rail {
-    position: relative;
-    border-top: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
-    padding: 28px 0 24px;
-    margin-bottom: 28px;
-  }
-  .stage-ticks {
-    display: flex; justify-content: space-between;
-    margin-bottom: 18px;
-  }
-  .stage-ticks .tick {
-    flex: 1;
-    text-align: center;
-    font-family: var(--mono); font-size: 10px;
-    color: var(--dim); letter-spacing: 0.15em;
-    cursor: pointer;
-    padding: 8px 4px;
-    border-bottom: 1px solid transparent;
-    transition: all 250ms ease;
-    position: relative;
-  }
+  .stage-rail { position: relative; border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); padding: 28px 0 24px; margin-bottom: 28px; }
+  .stage-ticks { display: flex; justify-content: space-between; margin-bottom: 18px; }
+  .stage-ticks .tick { flex: 1; text-align: center; font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: 0.15em; cursor: pointer; padding: 8px 4px; border-bottom: 1px solid transparent; transition: all 250ms ease; position: relative; }
   .stage-ticks .tick:hover { color: var(--ink); }
-  .stage-ticks .tick.active {
-    color: var(--warm);
-    border-bottom-color: var(--warm);
-  }
-  .stage-ticks .tick.active::before {
-    content: '';
-    position: absolute;
-    left: 50%; top: -8px;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--warm);
-    transform: translateX(-50%);
-    box-shadow: 0 0 10px var(--warm);
-  }
+  .stage-ticks .tick.active { color: var(--warm); border-bottom-color: var(--warm); }
+  .stage-ticks .tick.active::before { content: ''; position: absolute; left: 50%; top: -8px; width: 6px; height: 6px; border-radius: 50%; background: var(--warm); transform: translateX(-50%); box-shadow: 0 0 10px var(--warm); }
 
-  .stage-card {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 56px;
-    margin-top: 36px;
-    min-height: 380px;
-  }
-  .stage-card .left .age {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(80px, 14vw, 200px);
-    line-height: 0.9;
-    color: var(--warm);
-    letter-spacing: -0.04em;
-    margin-bottom: 8px;
-  }
-  .stage-card .left .age .unit {
-    font-family: var(--mono);
-    font-style: normal;
-    font-size: 14px;
-    color: var(--dim);
-    letter-spacing: 0.2em;
-    margin-left: 10px;
-    vertical-align: 28%;
-  }
-  .stage-card .left .stage-title {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: 28px;
-    color: var(--ink);
-    margin-bottom: 16px;
-  }
-  .stage-card .left .stage-sub {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--dim); letter-spacing: 0.2em;
-    text-transform: uppercase;
-  }
+  .stage-card { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; margin-top: 36px; min-height: 380px; }
+  .stage-card .left .age { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(80px, 14vw, 200px); line-height: 0.9; color: var(--warm); letter-spacing: -0.04em; margin-bottom: 8px; }
+  .stage-card .left .age .unit { font-family: var(--mono); font-style: normal; font-size: 14px; color: var(--dim); letter-spacing: 0.2em; margin-left: 10px; vertical-align: 28%; }
+  .stage-card .left .stage-title { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: 28px; color: var(--ink); margin-bottom: 16px; }
+  .stage-card .left .stage-sub { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 0.2em; text-transform: uppercase; }
 
-  .stage-card .right .actions-h {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 14px;
-  }
-  .stage-card .right ul {
-    list-style: none;
-    border-top: 1px solid var(--hairline);
-  }
-  .stage-card .right li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--hairline);
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: 17px;
-    color: var(--ink);
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-  }
-  .stage-card .right li::before {
-    content: attr(data-time);
-    font-family: var(--mono);
-    font-style: normal;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: var(--warm);
-    width: 60px;
-    flex-shrink: 0;
-  }
-  .stage-card .right .footnote {
-    margin-top: 18px;
-    font-family: var(--mono); font-size: 11px;
-    color: var(--dim); line-height: 1.7;
-    border-left: 1px solid var(--warm);
-    padding-left: 14px;
-  }
+  .stage-card .right .actions-h { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
+  .stage-card .right ul { list-style: none; border-top: 1px solid var(--hairline); }
+  .stage-card .right li { padding: 10px 0; border-bottom: 1px solid var(--hairline); font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 17px; color: var(--ink); display: flex; align-items: baseline; gap: 14px; }
+  .stage-card .right li::before { content: attr(data-time); font-family: var(--mono); font-style: normal; font-size: 10px; letter-spacing: 0.2em; color: var(--warm); width: 60px; flex-shrink: 0; }
+  .stage-card .right .footnote { margin-top: 18px; font-family: var(--mono); font-size: 11px; color: var(--dim); line-height: 1.7; border-left: 1px solid var(--warm); padding-left: 14px; }
 
-  /* --- system flow --- */
-  .system {
-    margin-top: 100px;
-    border-top: 1px solid var(--hairline);
-    padding-top: 48px;
-  }
-  .system h3 {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(28px, 4vw, 44px);
-    margin-bottom: 28px;
-    letter-spacing: -0.02em;
-  }
-  .flow {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    border-top: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
-  }
-  .flow .step {
-    padding: 24px 22px;
-    border-right: 1px solid var(--hairline);
-    min-height: 200px;
-    display: flex; flex-direction: column;
-  }
-  .flow .step:last-child { border-right: 0; }
-  .flow .step .n {
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.22em; color: var(--warm);
-    margin-bottom: 14px;
-  }
-  .flow .step .t {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: 22px;
-    line-height: 1.2;
-    margin-bottom: 12px;
-    color: var(--ink);
-  }
-  .flow .step .d {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--dim); line-height: 1.7;
-  }
+  .system { margin-top: 100px; border-top: 1px solid var(--hairline); padding-top: 48px; }
+  .system h3 { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(28px, 4vw, 44px); margin-bottom: 28px; letter-spacing: -0.02em; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .flow .step { padding: 24px 22px; min-height: 200px; display: flex; flex-direction: column; }
+  .flow .step .n { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--warm); margin-bottom: 14px; }
+  .flow .step .t { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: 22px; line-height: 1.2; margin-bottom: 12px; color: var(--ink); }
+  .flow .step .d { font-family: var(--mono); font-size: 11px; color: var(--dim); line-height: 1.7; }
 
-  /* --- footer creed --- */
-  .creed {
-    margin-top: 120px;
-    text-align: center;
-  }
-  .creed .glyph {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.5em;
-    color: var(--warm);
-    margin-bottom: 24px;
-  }
-  .creed .line {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(28px, 4.5vw, 56px);
-    line-height: 1.25;
-    color: var(--ink);
-    letter-spacing: -0.01em;
-    max-width: 22ch;
-    margin: 0 auto;
-  }
-  .creed .signoff {
-    margin-top: 36px;
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: 0.4em; color: var(--dim); text-transform: uppercase;
-  }
+  .creed { margin-top: 120px; text-align: center; }
+  .creed .glyph { font-family: var(--mono); font-size: 11px; letter-spacing: 0.5em; color: var(--warm); margin-bottom: 24px; }
+  .creed .line { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(28px, 4.5vw, 56px); line-height: 1.25; color: var(--ink); letter-spacing: -0.01em; max-width: 22ch; margin: 0 auto; }
+  .creed .signoff { margin-top: 36px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.4em; color: var(--dim); text-transform: uppercase; }
 
-  /* --- responsive --- */
   @media (max-width: 880px) {
     main { padding: 32px 22px 80px; }
     .hero { grid-template-columns: 1fr; gap: 32px; }
     .block { grid-template-columns: 1fr; gap: 18px; }
     .stage-card { grid-template-columns: 1fr; gap: 32px; }
     .flow { grid-template-columns: 1fr 1fr; }
-    .flow .step:nth-child(2) { border-right: 0; }
-    .flow .step:nth-child(1), .flow .step:nth-child(2) { border-bottom: 1px solid var(--hairline); }
     .field { grid-template-columns: 1fr; gap: 8px; }
     .stage-ticks { flex-wrap: wrap; gap: 8px; }
     .stage-ticks .tick { flex: 0 0 calc(33.33% - 8px); }
@@ -430,21 +95,21 @@
 </style>
 </head>
 <body>
-<canvas id="bg"></canvas>
+<canvas class="substrate" data-motion aria-hidden="true"></canvas>
+<div class="breath-bloom" aria-hidden="true"></div>
 
 <main>
   <div class="marquee">
     <div class="brand">
-      <div class="dot"></div>
+      <div class="dot" id="navDot"></div>
       <span>WZXA &nbsp;·&nbsp; background companion</span>
     </div>
     <div>v0.1 &nbsp;/&nbsp; treatment</div>
   </div>
 
-  <!-- HERO -->
   <section class="hero">
     <div>
-      <div class="codename">codename WZXA &nbsp;·&nbsp; the niggod is vibing</div>
+      <div class="codename">codename WZXA &nbsp;·&nbsp; the background is vibing</div>
       <h1>he lives <span class="ampersand">&amp;</span><br/>so do you.</h1>
     </div>
     <p class="lede">
@@ -452,7 +117,6 @@
     </p>
   </section>
 
-  <!-- WHAT IT IS -->
   <section class="block">
     <div class="label"><span class="num">01</span>thesis</div>
     <div class="body">
@@ -466,7 +130,7 @@
     <div class="body">
       <p>Six choices made once, at install. They calibrate the whole organism. Pick honestly — WZXA only works at the resolution of the truth you give him.</p>
 
-      <div class="panel" id="onboard">
+      <div class="panel glass" id="onboard" style="border-radius: 18px;">
         <div class="panel-h">
           <span>install &middot; calibration</span>
           <span class="right" id="onboardStatus">awaiting input</span>
@@ -475,99 +139,56 @@
         <div class="field">
           <div class="k">sex</div>
           <div class="v" data-key="sex">
-            <span class="chip">male</span>
-            <span class="chip">female</span>
+            <span class="chip">male</span><span class="chip">female</span>
           </div>
         </div>
         <div class="field">
           <div class="k">age</div>
           <div class="v" data-key="age">
-            <span class="chip">4–6</span>
-            <span class="chip">7–8</span>
-            <span class="chip">8–12</span>
-            <span class="chip">12–16</span>
-            <span class="chip">16–20</span>
-            <span class="chip">20–24</span>
-            <span class="chip">24–28</span>
-            <span class="chip">28+</span>
+            <span class="chip">4–6</span><span class="chip">7–8</span><span class="chip">8–12</span><span class="chip">12–16</span><span class="chip">16–20</span><span class="chip">20–24</span><span class="chip">24–28</span><span class="chip">28+</span>
           </div>
         </div>
         <div class="field">
           <div class="k">type of life</div>
           <div class="v" data-key="life">
-            <span class="chip">student</span>
-            <span class="chip">working</span>
-            <span class="chip">creating</span>
-            <span class="chip">drifting</span>
-            <span class="chip">surviving</span>
+            <span class="chip">student</span><span class="chip">working</span><span class="chip">creating</span><span class="chip">drifting</span><span class="chip">surviving</span>
           </div>
         </div>
         <div class="field">
           <div class="k">interest</div>
           <div class="v" data-key="interest">
-            <span class="chip">code</span>
-            <span class="chip">sport</span>
-            <span class="chip">music</span>
-            <span class="chip">streets</span>
-            <span class="chip">god</span>
+            <span class="chip">code</span><span class="chip">sport</span><span class="chip">music</span><span class="chip">streets</span><span class="chip">god</span>
           </div>
         </div>
         <div class="field">
           <div class="k">intelligence</div>
           <div class="v" data-key="iq">
-            <span class="chip">visual</span>
-            <span class="chip">verbal</span>
-            <span class="chip">kinetic</span>
-            <span class="chip">spiritual</span>
-            <span class="chip">numeric</span>
+            <span class="chip">visual</span><span class="chip">verbal</span><span class="chip">kinetic</span><span class="chip">spiritual</span><span class="chip">numeric</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- TIMELINE -->
   <section class="timeline-wrap">
     <div class="timeline-h">
       <h2>he ages with you.</h2>
-      <div class="meta">stages &nbsp;·&nbsp; 8 of 14</div>
+      <div class="meta">stages &nbsp;·&nbsp; 8 of 8</div>
     </div>
-
-    <div class="stage-rail">
-      <div class="stage-ticks" id="ticks"></div>
-    </div>
-
+    <div class="stage-rail"><div class="stage-ticks" id="ticks"></div></div>
     <div class="stage-card" id="stageCard"></div>
   </section>
 
-  <!-- SYSTEM FLOW -->
   <section class="system">
     <h3>how he runs.</h3>
     <div class="flow">
-      <div class="step">
-        <div class="n">001 &nbsp;sense</div>
-        <div class="t">read the surface</div>
-        <div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div>
-      </div>
-      <div class="step">
-        <div class="n">002 &nbsp;mirror</div>
-        <div class="t">do what you do</div>
-        <div class="d">when you're working, he's working. when you're silent, he speaks.</div>
-      </div>
-      <div class="step">
-        <div class="n">003 &nbsp;diverge</div>
-        <div class="t">do what you don't</div>
-        <div class="d">when you stop, he picks up. coding. blunting. praying. moving without you.</div>
-      </div>
-      <div class="step">
-        <div class="n">004 &nbsp;return</div>
-        <div class="t">become you again</div>
-        <div class="d">at the next breath, he folds back to where you are. the background settles.</div>
-      </div>
+      <div class="step glass"><div class="n">001 &nbsp;sense</div><div class="t">read the surface</div><div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div></div>
+      <div class="step glass"><div class="n">002 &nbsp;mirror</div><div class="t">do what you do</div><div class="d">when you're working, he's working. when you're silent, he speaks.</div></div>
+      <div class="step glass"><div class="n">003 &nbsp;diverge</div><div class="t">do what you don't</div><div class="d">when you stop, he picks up. coding. praying. moving without you.</div></div>
+      <div class="step glass"><div class="n">004 &nbsp;return</div><div class="t">become you again</div><div class="d">at the next breath, he folds back to where you are. the background settles.</div></div>
     </div>
   </section>
 
-  <!-- TWO MORE BLOCKS -->
   <section class="block" style="margin-top: 100px;">
     <div class="label"><span class="num">03</span>night theme</div>
     <div class="body">
@@ -584,7 +205,6 @@
     </div>
   </section>
 
-  <!-- CREED -->
   <section class="creed">
     <div class="glyph">M · E · B</div>
     <div class="line">to be perfect is to be what is:<br/><em>past, present, future = perfect.</em></div>
@@ -592,68 +212,22 @@
   </section>
 </main>
 
-<script>
-// --- background canvas: a single warm orb that breathes (links to endlessly) ---
-(() => {
-  const canvas = document.getElementById('bg');
-  const ctx = canvas.getContext('2d');
-  let W, H, DPR = Math.min(devicePixelRatio || 1, 2);
-  function resize() {
-    W = innerWidth; H = innerHeight;
-    canvas.width = W * DPR; canvas.height = H * DPR;
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-  resize();
-  addEventListener('resize', resize);
+<script type="module">
+import { initGlass } from '/assets/js/glass.js';
+import { mountSubstrate } from '/assets/js/substrate.js';
+import { onBreath, bindBloom } from '/assets/js/engine.js';
 
-  const N = 140;
-  const ps = [];
-  for (let i = 0; i < N; i++) {
-    ps.push({
-      a: Math.random() * Math.PI * 2,
-      r: Math.random(),
-      seed: Math.random(),
-      phase: Math.random() * Math.PI * 2,
-      size: 0.4 + Math.random() * 1.2,
-    });
-  }
+initGlass();
+mountSubstrate(document.querySelector('canvas.substrate'), { orb: { cx: 0.78, cy: 0.32, rad: 0.32 }, particles: 140 });
+bindBloom(document.querySelector('.breath-bloom'));
 
-  function frame(now) {
-    ctx.fillStyle = 'rgba(7, 6, 10, 0.16)';
-    ctx.fillRect(0, 0, W, H);
+const dot = document.getElementById('navDot');
+onBreath(s => {
+  if (!dot) return;
+  dot.style.opacity = (0.55 + s.breath * 0.55).toFixed(3);
+  dot.style.transform = `scale(${(0.9 + s.breath * 0.4).toFixed(3)})`;
+});
 
-    const cx = W * 0.78, cy = H * 0.32;
-    const breath = 0.6 + Math.sin(now * 0.0006) * 0.4;
-    const R = Math.min(W, H) * 0.32;
-
-    for (let i = 0; i < N; i++) {
-      const p = ps[i];
-      const a = p.a + now * 0.00006 * (p.seed - 0.5);
-      const r = p.r * R * (0.3 + breath * 0.9);
-      const wob = Math.sin(now * 0.0008 + p.phase) * 6;
-      const x = cx + Math.cos(a) * r + wob;
-      const y = cy + Math.sin(a) * r * 0.85;
-
-      const warmth = 0.3 + p.seed * 0.5;
-      const ir = 245, ig = Math.round(201 + (236 - 201) * (1 - warmth)), ib = Math.round(122 + (220 - 122) * (1 - warmth));
-      ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, ${0.4 + p.seed * 0.4})`;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size * (0.8 + (1 - breath) * 0.6), 0, Math.PI * 2);
-      ctx.fill();
-
-      // halo
-      ctx.fillStyle = `rgba(${ir}, ${ig}, ${ib}, 0.04)`;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size * 7, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
-
-// --- onboarding chips ---
 (() => {
   const status = document.getElementById('onboardStatus');
   const groups = document.querySelectorAll('#onboard .v');
@@ -672,97 +246,31 @@
   });
 })();
 
-// --- timeline data ---
 const STAGES = [
-  {
-    range: '4–6', title: 'regular things.',
-    sub: 'no filter, only world',
-    actions: [
-      { t: '08:12', a: 'walking to school' },
-      { t: '11:40', a: 'reading something out loud' },
-      { t: '15:20', a: 'asking a stupid question' },
-      { t: '17:55', a: 'running for no reason' },
-      { t: '19:30', a: 'looking at a stranger too long' },
-    ],
-    note: 'no Fortnite. those fuckers.',
-  },
-  {
-    range: '7–8', title: 'starting to think properly.',
-    sub: 'no more bullshit',
-    actions: [
-      { t: '09:00', a: 'answering nothing' },
-      { t: '12:30', a: 'telling one blunt truth' },
-      { t: '16:10', a: 'asking about space' },
-      { t: '20:00', a: 'believing he is what he believes' },
-    ],
-    note: 'what you think is what is. life is good. life can be badder.',
-  },
-  {
-    range: '8–12', title: 'play, mostly.',
-    sub: 'no border at all',
-    actions: [
-      { t: '07:45', a: 'eating fast' },
-      { t: '14:00', a: 'inventing a sport' },
-      { t: '17:30', a: 'breaking it' },
-      { t: '21:15', a: 'random hard language' },
-    ],
-    note: 'updates monthly. never finished. never repeats.',
-  },
-  {
-    range: '12–16', title: 'shit getting real.',
-    sub: 'no more fairy lies',
-    actions: [
-      { t: '06:30', a: 'fight, hide, die, or flight' },
-      { t: '13:20', a: 'reading the room' },
-      { t: '18:40', a: 'on a bike, troubling traffic' },
-      { t: '23:50', a: 'lying about where he was' },
-    ],
-    note: 'environment, society, programming, paths, expectation. she rests now.',
-  },
-  {
-    range: '16–20', title: 'turning point.',
-    sub: 'discovery · personality',
-    actions: [
-      { t: '10:10', a: 'thinking about a girl' },
-      { t: '14:50', a: 'never acting on it' },
-      { t: '17:20', a: 'kicking a ball / counting bills' },
-      { t: '22:00', a: 'becoming the One before One' },
-    ],
-    note: 'thoughts shown. moves never made. WZXA stays a thinking state here.',
-  },
-  {
-    range: '20–24', title: 'most fucked-up state.',
-    sub: 'reality breaking · bachelor BPH',
-    actions: [
-      { t: '13:00', a: 'job moves · disc moves' },
-      { t: '19:30', a: 'pre-game alone' },
-      { t: '23:15', a: 'sauced up · three blunts' },
-      { t: '02:40', a: 'making faces like M' },
-    ],
-    note: 'after dark the theme changes. don\'t end up like him. on god.',
-  },
-  {
-    range: '24–28', title: 'died many times already.',
-    sub: 'whole truth, in code',
-    actions: [
-      { t: '07:00', a: 'coding · god shit' },
-      { t: '12:30', a: 'doing the thing you stopped doing' },
-      { t: '18:00', a: 'manifesting' },
-      { t: '01:00', a: 'a blunt, a window, a thought' },
-    ],
-    note: 'you can\'t fuck up now. when you idle, he picks up where you left.',
-  },
-  {
-    range: '28+', title: 'mastered the shit.',
-    sub: 'past · present · future = perfect',
-    actions: [
-      { t: '05:30', a: 'sitting still' },
-      { t: '11:00', a: 'building' },
-      { t: '17:00', a: 'remembering' },
-      { t: '22:30', a: 'being what is' },
-    ],
-    note: 'M : E. being the master of this shit.',
-  },
+  { range: '4–6', title: 'regular things.', sub: 'no filter, only world',
+    actions: [{t:'08:12',a:'walking to school'},{t:'11:40',a:'reading something out loud'},{t:'15:20',a:'asking a stupid question'},{t:'17:55',a:'running for no reason'},{t:'19:30',a:'looking at a stranger too long'}],
+    note: 'no Fortnite. those fuckers.' },
+  { range: '7–8', title: 'starting to think properly.', sub: 'no more bullshit',
+    actions: [{t:'09:00',a:'answering nothing'},{t:'12:30',a:'telling one blunt truth'},{t:'16:10',a:'asking about space'},{t:'20:00',a:'believing he is what he believes'}],
+    note: 'what you think is what is. life is good. life can be badder.' },
+  { range: '8–12', title: 'play, mostly.', sub: 'no border at all',
+    actions: [{t:'07:45',a:'eating fast'},{t:'14:00',a:'inventing a sport'},{t:'17:30',a:'breaking it'},{t:'21:15',a:'random hard language'}],
+    note: 'updates monthly. never finished. never repeats.' },
+  { range: '12–16', title: 'shit getting real.', sub: 'no more fairy lies',
+    actions: [{t:'06:30',a:'fight, hide, die, or flight'},{t:'13:20',a:'reading the room'},{t:'18:40',a:'on a bike, troubling traffic'},{t:'23:50',a:'lying about where he was'}],
+    note: 'environment, society, programming, paths, expectation. she rests now.' },
+  { range: '16–20', title: 'turning point.', sub: 'discovery · personality',
+    actions: [{t:'10:10',a:'thinking about a girl'},{t:'14:50',a:'never acting on it'},{t:'17:20',a:'kicking a ball / counting bills'},{t:'22:00',a:'becoming the One before One'}],
+    note: 'thoughts shown. moves never made. WZXA stays a thinking state here.' },
+  { range: '20–24', title: 'most fucked-up state.', sub: 'reality breaking · bachelor BPH',
+    actions: [{t:'13:00',a:'job moves · disc moves'},{t:'19:30',a:'pre-game alone'},{t:'23:15',a:'sauced up · three blunts'},{t:'02:40',a:'making faces like M'}],
+    note: 'after dark the theme changes. don\'t end up like him. on god.' },
+  { range: '24–28', title: 'died many times already.', sub: 'whole truth, in code',
+    actions: [{t:'07:00',a:'coding · god shit'},{t:'12:30',a:'doing the thing you stopped doing'},{t:'18:00',a:'manifesting'},{t:'01:00',a:'a blunt, a window, a thought'}],
+    note: 'you can\'t fuck up now. when you idle, he picks up where you left.' },
+  { range: '28+', title: 'mastered the shit.', sub: 'past · present · future = perfect',
+    actions: [{t:'05:30',a:'sitting still'},{t:'11:00',a:'building'},{t:'17:00',a:'remembering'},{t:'22:30',a:'being what is'}],
+    note: 'M : E. being the master of this shit.' },
 ];
 
 (() => {
@@ -771,9 +279,7 @@ const STAGES = [
 
   STAGES.forEach((s, i) => {
     const t = document.createElement('div');
-    t.className = 'tick';
-    t.textContent = s.range;
-    t.dataset.idx = i;
+    t.className = 'tick'; t.textContent = s.range; t.dataset.idx = i;
     ticks.appendChild(t);
   });
 
@@ -788,21 +294,16 @@ const STAGES = [
       </div>
       <div class="right">
         <div class="actions-h">a day in his life</div>
-        <ul>
-          ${s.actions.map(a => `<li data-time="${a.t}">${a.a}</li>`).join('')}
-        </ul>
+        <ul>${s.actions.map(a => `<li data-time="${a.t}">${a.a}</li>`).join('')}</ul>
         <div class="footnote">${s.note}</div>
-      </div>
-    `;
+      </div>`;
   }
 
   ticks.addEventListener('click', e => {
-    const t = e.target.closest('.tick');
-    if (!t) return;
+    const t = e.target.closest('.tick'); if (!t) return;
     render(parseInt(t.dataset.idx, 10));
   });
 
-  // auto-rotate gently every 7s if user hasn't clicked
   let cur = 0, userTouched = false;
   ticks.addEventListener('click', () => userTouched = true, { once: true });
   render(0);

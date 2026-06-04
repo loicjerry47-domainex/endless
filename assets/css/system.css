@@ -1,0 +1,155 @@
+/* ============================================================
+   DDUP · DOMAINEX — design system
+   tokens, glass primitive, type, motion, a11y
+============================================================ */
+
+:root {
+  /* palette */
+  --bg:       #07060a;
+  --bg-soft:  #0e0c14;
+  --ink:      #f4ecdc;
+  --warm:     #f5c97a;
+  --ember:    #e88a4a;
+  --cool:     #7aa9f5;
+  --dim:      rgba(244, 236, 220, 0.50);
+  --faint:    rgba(244, 236, 220, 0.14);
+  --hairline: rgba(244, 236, 220, 0.10);
+
+  /* type */
+  --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --serif: "Fraunces", "Cormorant Garamond", Iowan Old Style, Georgia, serif;
+  --serif-display: "Cormorant Garamond", "Fraunces", Iowan Old Style, Georgia, serif;
+
+  /* glass (lifted from ios-frame.jsx) */
+  --glass-tint:   rgba(18, 16, 26, 0.38);
+  --glass-blur:   blur(18px) saturate(165%);
+  --glass-border: 0.5px solid rgba(244, 236, 220, 0.14);
+  --glass-shine:  inset 1.2px 1.2px 1px rgba(255, 255, 255, 0.10),
+                  inset -1px -1px 1px rgba(0, 0, 0, 0.28);
+  --glass-drop:   0 24px 70px rgba(0, 0, 0, 0.45);
+  --glass-radius: 22px;
+
+  /* motion */
+  --ease-out:   cubic-bezier(0.2, 0.7, 0.3, 1);
+  --ease-in:    cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* cross-document view transitions — browsers that support it get smooth
+   page-to-page fades; the rest get instant navigation (no-op fallback). */
+@view-transition { navigation: auto; }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 380ms; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+html, body { background: var(--bg); color: var(--ink); }
+body {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* a11y */
+::selection { background: rgba(245, 201, 122, 0.30); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--warm); outline-offset: 3px; border-radius: 4px; }
+.skip-link {
+  position: absolute; left: -9999px; top: 12px;
+  background: var(--ink); color: var(--bg);
+  padding: 10px 16px; border-radius: 6px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  z-index: 999;
+}
+.skip-link:focus { left: 12px; }
+
+/* scrollbar (webkit) */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+/* reduced-motion: kill canvases, snap transitions, but keep layout */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  canvas[data-motion],
+  .breath-bloom { display: none !important; }
+}
+
+/* substrate */
+canvas.substrate {
+  position: fixed; inset: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0; pointer-events: none;
+  view-transition-name: orb;
+}
+.breath-bloom {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(60% 50% at 78% 24%,
+    rgba(245, 201, 122, calc(0.05 + var(--b, 0.5) * 0.06)), transparent 70%);
+  mix-blend-mode: screen;
+}
+
+/* liquid glass primitive */
+.glass {
+  position: relative;
+  border-radius: var(--glass-radius);
+  overflow: hidden;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shine), var(--glass-drop);
+  isolation: isolate;
+}
+.glass::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.10), transparent 28%);
+  pointer-events: none; z-index: 2;
+}
+.glass::before {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, -20%),
+    rgba(245, 201, 122, 0.16), rgba(245, 201, 122, 0.05) 30%, transparent 60%);
+  opacity: 0; transition: opacity 450ms ease;
+  pointer-events: none; z-index: 1;
+}
+.glass:hover::before,
+.glass:focus-within::before { opacity: 1; }
+.glass > * { position: relative; z-index: 3; }
+
+/* type utilities */
+.serif      { font-family: var(--serif); font-weight: 300; font-style: italic; }
+.serif-d    { font-family: var(--serif-display); font-weight: 300; font-style: italic; }
+.mono       { font-family: var(--mono); }
+.upper      { text-transform: uppercase; letter-spacing: 0.22em; }
+.kicker     { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--dim); }
+.dim        { color: var(--dim); }
+.warm       { color: var(--warm); }
+.breathe-wt { font-variation-settings: 'wght' calc(280 + var(--b, 0.5) * 80); }
+
+/* split-text */
+.split-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.4em);
+  will-change: transform, opacity;
+}
+.split-char.in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 600ms var(--ease-out), transform 800ms var(--ease-spring);
+}
+
+/* reveal-on-scroll */
+.reveal {
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 800ms var(--ease-out), transform 1000ms var(--ease-spring);
+}
+.reveal.in { opacity: 1; transform: none; }

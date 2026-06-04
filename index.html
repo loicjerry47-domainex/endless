@@ -3,338 +3,71 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DDUP · DOMAINEX</title>
+<title>DDUP · DOMAINEX — he lives & so do you</title>
 <meta name="description" content="A background companion that lives on your device. Breathes when you breathe. Ages when you age." />
+<meta property="og:type"        content="website" />
+<meta property="og:title"       content="DDUP · DOMAINEX" />
+<meta property="og:description" content="he lives & so do you. a theme that breathes." />
+<meta property="og:image"       content="/assets/favicon.svg" />
+<meta name="theme-color"        content="#f5c97a" />
+<link rel="icon"     href="/assets/favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="/manifest.json" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/css/system.css" />
 <style>
-  :root {
-    --bg:       #07060a;
-    --bg-soft:  #0e0c14;
-    --ink:      #f4ecdc;
-    --warm:     #f5c97a;
-    --ember:    #e88a4a;
-    --cool:     #7aa9f5;
-    --dim:      rgba(244, 236, 220, 0.50);
-    --faint:    rgba(244, 236, 220, 0.14);
-    --hairline: rgba(244, 236, 220, 0.10);
-    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --serif: "Cormorant Garamond", Iowan Old Style, Georgia, serif;
-
-    /* liquid glass recipe (lifted from ios-frame.jsx) */
-    --glass-tint:   rgba(18, 16, 26, 0.38);
-    --glass-blur:   blur(18px) saturate(165%);
-    --glass-border: 0.5px solid rgba(244, 236, 220, 0.14);
-    --glass-shine:  inset 1.2px 1.2px 1px rgba(255, 255, 255, 0.10),
-                    inset -1px -1px 1px rgba(0, 0, 0, 0.28);
-    --glass-drop:   0 24px 70px rgba(0, 0, 0, 0.45);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  html, body { background: var(--bg); color: var(--ink); }
-  body {
-    font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.7;
-    overflow-x: hidden;
-    min-height: 100vh;
-  }
-
-  /* ── living substrate ── */
-  canvas#bg {
-    position: fixed; inset: 0;
-    width: 100vw; height: 100vh;
-    z-index: 0; pointer-events: none;
-  }
-  /* whole-page breath: a warm bloom that swells with the orb */
-  .breath {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background: radial-gradient(60% 50% at 78% 24%,
-      rgba(245, 201, 122, calc(0.05 + var(--b, 0.5) * 0.06)), transparent 70%);
-    mix-blend-mode: screen;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-    canvas#bg { display: none; }
-    .breath { display: none; }
-  }
-
-  /* ── liquid glass primitive ── */
-  .glass {
-    position: relative;
-    border-radius: 22px;
-    overflow: hidden;
-    background: var(--glass-tint);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: var(--glass-border);
-    box-shadow: var(--glass-shine), var(--glass-drop);
-    isolation: isolate;
-  }
-  /* edge refraction — light catches the top-left lip */
-  .glass::after {
-    content: '';
-    position: absolute; inset: 0; border-radius: inherit;
-    background: linear-gradient(150deg, rgba(255, 255, 255, 0.10), transparent 28%);
-    pointer-events: none; z-index: 2;
-  }
-  /* cursor-tracked specular sheen — the "wet" in wet glass */
-  .glass::before {
-    content: '';
-    position: absolute; inset: -1px; border-radius: inherit;
-    background: radial-gradient(220px circle at var(--mx, 50%) var(--my, -20%),
-      rgba(245, 201, 122, 0.16), rgba(245, 201, 122, 0.05) 30%, transparent 60%);
-    opacity: 0; transition: opacity 450ms ease;
-    pointer-events: none; z-index: 1;
-  }
-  .glass:hover::before { opacity: 1; }
-
-  /* ── layout ── */
   main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 48px 160px; }
-
-  /* ── nav (floating glass bar) ── */
-  .nav-wrap {
-    position: sticky; top: 18px; z-index: 30;
-    margin: 18px 0 0;
-  }
-  nav {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 22px;
-    border-radius: 9999px;
-  }
-  .nav-brand {
-    display: flex; gap: 14px; align-items: center;
-    font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink);
-    position: relative; z-index: 3;
-  }
-  .nav-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--warm);
-    box-shadow: 0 0 12px var(--warm);
-    animation: pulse 3.6s ease-in-out infinite;
-    flex-shrink: 0;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.55; transform: scale(1); }
-    50%       { opacity: 1;    transform: scale(1.3); }
-  }
-  .nav-right {
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
-    position: relative; z-index: 3;
-  }
-
-  /* ── hero ── */
-  .hero {
-    padding: 130px 0 110px;
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 80px;
-    align-items: end;
-  }
-  .hero-kicker {
-    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
-    color: var(--dim); margin-bottom: 24px;
-  }
-  .hero h1 {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(64px, 10vw, 148px);
-    line-height: 0.90;
-    letter-spacing: -0.03em;
-    color: var(--ink);
-    text-shadow: 0 2px 40px rgba(7, 6, 10, 0.6);
-  }
+  .nav-wrap { position: sticky; top: 18px; z-index: 30; margin: 18px 0 0; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; border-radius: 9999px; }
+  .nav-brand { display: flex; gap: 14px; align-items: center; font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink); }
+  .nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 12px var(--warm); flex-shrink: 0; }
+  .nav-right { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
+  .hero { padding: 130px 0 110px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 80px; align-items: end; }
+  .hero h1 { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(64px, 10vw, 148px); line-height: 0.90; letter-spacing: -0.03em; color: var(--ink); text-shadow: 0 2px 40px rgba(7, 6, 10, 0.6); }
   .hero h1 em { color: var(--warm); font-style: italic; }
+  .hero h1 .amp { display: inline-block; font-family: var(--serif); font-variation-settings: 'wght' calc(380 + var(--b, 0.5) * 220); transition: font-variation-settings 200ms linear; }
   .hero-right { padding-bottom: 6px; }
-  .hero-lede {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: 22px;
-    line-height: 1.55;
-    color: var(--ink);
-    max-width: 34ch;
-    margin-bottom: 28px;
-  }
+  .hero-lede { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 22px; line-height: 1.55; color: var(--ink); max-width: 34ch; margin-bottom: 28px; }
   .hero-lede strong { color: var(--warm); font-style: normal; font-weight: 400; }
-  .hero-meta {
-    display: inline-flex; flex-direction: column; gap: 4px;
-    padding: 16px 20px;
-    border-radius: 16px;
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--dim); line-height: 1.9;
-  }
+  .hero-meta { display: inline-flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-radius: 16px; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); line-height: 1.9; }
   .hero-meta b { color: var(--warm); font-weight: 400; }
-  .hero-meta > div { position: relative; z-index: 3; }
-
-  /* ── section header ── */
-  .section-h {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 56px 0 28px;
-  }
-  .section-h h2 {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(32px, 4vw, 52px);
-    letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-  .section-h .meta {
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim);
-  }
-
-  /* ── experience cards (glass) ── */
-  .experiences {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-  }
-  .exp-card {
-    display: flex; flex-direction: column;
-    padding: 34px 32px 30px;
-    text-decoration: none;
-    color: inherit;
-    min-height: 300px;
-    transition: transform 420ms cubic-bezier(0.2, 0.7, 0.3, 1),
-                box-shadow 420ms ease, border-color 420ms ease;
-  }
-  .exp-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(245, 201, 122, 0.28);
-    box-shadow: var(--glass-shine),
-                0 30px 80px rgba(0, 0, 0, 0.55),
-                0 0 0 1px rgba(245, 201, 122, 0.06);
-  }
+  .section-h { display: flex; justify-content: space-between; align-items: baseline; padding: 56px 0 28px; }
+  .section-h h2 { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(32px, 4vw, 52px); letter-spacing: -0.02em; color: var(--ink); }
+  .section-h .meta { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); }
+  .experiences { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .exp-card { display: flex; flex-direction: column; padding: 34px 32px 30px; text-decoration: none; color: inherit; min-height: 300px; transition: transform 420ms var(--ease-spring), box-shadow 420ms ease, border-color 420ms ease; }
+  .exp-card:hover { transform: translateY(-5px); border-color: rgba(245, 201, 122, 0.28); box-shadow: var(--glass-shine), 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(245, 201, 122, 0.06); }
   .exp-card:hover .exp-arrow { opacity: 1; transform: translate(0, 0); }
   .exp-card:hover .exp-title { color: var(--warm); }
-  .exp-card > * { position: relative; z-index: 3; }
-  .exp-num {
-    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
-    color: var(--warm); margin-bottom: 20px;
-  }
-  .exp-title {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: clamp(28px, 3.5vw, 44px);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-    margin-bottom: 16px;
-    transition: color 300ms ease;
-  }
-  .exp-body {
-    font-size: 12px;
-    color: var(--dim);
-    line-height: 1.85;
-    letter-spacing: 0.02em;
-    flex: 1;
-    max-width: 42ch;
-  }
-  .exp-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-top: 28px;
-    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-  }
-  .exp-tag { color: var(--dim); }
-  .exp-arrow {
-    color: var(--warm);
-    opacity: 0;
-    transform: translate(-6px, 4px);
-    transition: opacity 280ms ease, transform 280ms ease;
-    font-size: 16px;
-  }
+  .exp-num   { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--warm); margin-bottom: 20px; }
+  .exp-title { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(28px, 3.5vw, 44px); line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 16px; transition: color 300ms ease; }
+  .exp-body  { font-size: 12px; color: var(--dim); line-height: 1.85; letter-spacing: 0.02em; flex: 1; max-width: 42ch; }
+  .exp-footer{ display: flex; justify-content: space-between; align-items: center; margin-top: 28px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .exp-tag   { color: var(--dim); }
+  .exp-arrow { color: var(--warm); opacity: 0; transform: translate(-6px, 4px); transition: opacity 280ms ease, transform 280ms ease; font-size: 16px; }
   .exp-card.wide { grid-column: span 2; }
   .exp-card.wide .exp-title { font-size: clamp(36px, 5vw, 72px); }
   .exp-card.wide .exp-body  { max-width: 70ch; }
-
-  /* ── about block ── */
-  .about {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 48px;
-    padding: 44px 0;
-    border-bottom: 1px solid var(--hairline);
-  }
+  .about { display: grid; grid-template-columns: 200px 1fr; gap: 48px; padding: 44px 0; border-bottom: 1px solid var(--hairline); }
   .about:first-of-type { border-top: 1px solid var(--hairline); }
-  .about-label {
-    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
-    color: var(--dim); padding-top: 4px;
-  }
+  .about-label { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--dim); padding-top: 4px; }
   .about-label .n { color: var(--warm); margin-right: 8px; }
-  .about-body {
-    font-family: var(--serif);
-    font-style: italic;
-    font-weight: 300;
-    font-size: 20px;
-    line-height: 1.6;
-    color: var(--ink);
-    max-width: 62ch;
-  }
+  .about-body { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 20px; line-height: 1.6; color: var(--ink); max-width: 62ch; }
   .about-body p + p { margin-top: 16px; }
   .about-body strong { color: var(--warm); font-style: normal; font-weight: 400; }
   .about-body em { font-style: normal; color: var(--warm); }
-
-  /* ── flow (glass steps) ── */
   .flow-wrap { padding-top: 56px; }
-  .flow {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-top: 28px;
-  }
-  .flow-step {
-    padding: 26px 22px 30px;
-    display: flex; flex-direction: column;
-  }
-  .flow-step > * { position: relative; z-index: 3; }
-  .flow-step .n {
-    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
-    color: var(--warm); margin-bottom: 16px;
-  }
-  .flow-step .t {
-    font-family: var(--serif);
-    font-style: italic; font-weight: 300;
-    font-size: 22px; line-height: 1.2;
-    color: var(--ink); margin-bottom: 12px;
-  }
-  .flow-step .d {
-    font-size: 11px; color: var(--dim); line-height: 1.8;
-  }
-
-  /* ── creed ── */
-  .creed {
-    padding: 130px 40px 90px;
-    text-align: center;
-    margin-top: 90px;
-    border-radius: 28px;
-  }
-  .creed > * { position: relative; z-index: 3; }
-  .creed .glyph {
-    font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase;
-    color: var(--warm); margin-bottom: 32px;
-  }
-  .creed .line {
-    font-family: var(--serif);
-    font-style: italic; font-weight: 300;
-    font-size: clamp(28px, 4vw, 52px);
-    line-height: 1.3;
-    color: var(--ink);
-    letter-spacing: -0.01em;
-    max-width: 24ch;
-    margin: 0 auto 40px;
-  }
-  .creed .signoff {
-    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
-    color: var(--dim);
-  }
-
-  /* ── responsive ── */
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+  .flow-step { padding: 26px 22px 30px; display: flex; flex-direction: column; }
+  .flow-step .n { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--warm); margin-bottom: 16px; }
+  .flow-step .t { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: 22px; line-height: 1.2; color: var(--ink); margin-bottom: 12px; }
+  .flow-step .d { font-size: 11px; color: var(--dim); line-height: 1.8; }
+  .creed { padding: 130px 40px 90px; text-align: center; margin-top: 90px; border-radius: 28px; }
+  .creed .glyph   { font-size: 10px; letter-spacing: 0.55em; text-transform: uppercase; color: var(--warm); margin-bottom: 32px; }
+  .creed .line    { font-family: var(--serif-display); font-style: italic; font-weight: 300; font-size: clamp(28px, 4vw, 52px); line-height: 1.3; color: var(--ink); letter-spacing: -0.01em; max-width: 24ch; margin: 0 auto 12px; }
+  .creed .verse   { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--dim); margin: 18px auto 36px; min-height: 1.5em; transition: opacity 800ms ease; max-width: 42ch; }
+  .creed .signoff { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--dim); }
   @media (max-width: 900px) {
     main { padding: 0 22px 100px; }
     .hero { grid-template-columns: 1fr; gap: 36px; padding: 90px 0 72px; }
@@ -350,34 +83,32 @@
 </style>
 </head>
 <body>
-<canvas id="bg" aria-hidden="true"></canvas>
-<div class="breath" aria-hidden="true"></div>
+<a class="skip-link" href="#main">skip to content</a>
+<canvas class="substrate" data-motion aria-hidden="true"></canvas>
+<div class="breath-bloom" aria-hidden="true"></div>
 
-<main>
-
-  <!-- NAV -->
+<main id="main">
   <div class="nav-wrap">
     <nav class="glass">
-      <div class="nav-brand">
-        <div class="nav-dot"></div>
-        <span>DDUP &nbsp;·&nbsp; DOMAINEX</span>
-      </div>
+      <div class="nav-brand"><div class="nav-dot" id="navDot"></div><span>DDUP &nbsp;·&nbsp; DOMAINEX</span></div>
       <div class="nav-right">v0.1 &nbsp;/&nbsp; treatment</div>
     </nav>
   </div>
 
-  <!-- HERO -->
   <section class="hero">
     <div>
-      <div class="hero-kicker">codename WZXA &nbsp;·&nbsp; background companion</div>
-      <h1>he lives<br/><em>&amp;</em><br/>so do you.</h1>
+      <div class="kicker reveal">codename WZXA &nbsp;·&nbsp; background companion</div>
+      <h1>
+        <span class="line-a" data-split>he lives</span><br/>
+        <span class="amp" id="heroAmp">&amp;</span><br/>
+        <span class="line-b" data-split>so do you.</span>
+      </h1>
     </div>
     <div class="hero-right">
-      <p class="hero-lede">
-        A theme that <strong>breathes</strong>. An autonomous companion living quietly in the background of your device —
-        aging when you age, vibing when you vibe, doing the thing you should be doing when you aren't.
+      <p class="hero-lede reveal">
+        A theme that <strong>breathes</strong>. An autonomous companion living quietly in the background of your device — aging when you age, vibing when you vibe, doing the thing you should be doing when you aren't.
       </p>
-      <div class="hero-meta glass">
+      <div class="hero-meta glass reveal">
         <div><b>not an app</b> &nbsp;·&nbsp; the wallpaper</div>
         <div><b>8 stages</b> &nbsp;·&nbsp; 14 coming</div>
         <div><b>ships monthly</b> &nbsp;·&nbsp; never repeats</div>
@@ -385,251 +116,122 @@
     </div>
   </section>
 
-  <!-- EXPERIENCES -->
-  <div class="section-h">
-    <h2>the work.</h2>
-    <div class="meta">5 prototypes</div>
-  </div>
+  <div class="section-h reveal"><h2>the work.</h2><div class="meta">5 prototypes</div></div>
 
   <div class="experiences">
-
-    <a class="exp-card glass wide" href="welcome/wzxa.html">
+    <a class="exp-card glass wide reveal" href="/welcome/wzxa.html">
       <div class="exp-num">001 &nbsp;treatment</div>
       <div class="exp-title">WZXA &mdash; full concept</div>
-      <div class="exp-body">
-        The complete treatment doc. Who he is, how he runs, every stage from 4–6 through 28+.
-        The onboarding calibration. The night theme. The creed.
-      </div>
-      <div class="exp-footer">
-        <span class="exp-tag">doc &nbsp;·&nbsp; scrollable</span>
-        <span class="exp-arrow">&#8599;</span>
-      </div>
+      <div class="exp-body">The complete treatment doc. Who he is, how he runs, every stage from 4–6 through 28+. The onboarding calibration. The night theme. The creed.</div>
+      <div class="exp-footer"><span class="exp-tag">doc &nbsp;·&nbsp; scrollable</span><span class="exp-arrow">&#8599;</span></div>
     </a>
-
-    <a class="exp-card glass" href="welcome/wzxa-lockscreen.html">
+    <a class="exp-card glass reveal" href="/welcome/wzxa-lockscreen.html">
       <div class="exp-num">002 &nbsp;prototype</div>
       <div class="exp-title">lockscreen</div>
-      <div class="exp-body">
-        Interactive explorer. Pick an age stage, drag through the hour of day —
-        watch WZXA shift his palette, activity, and mood in real time.
-      </div>
-      <div class="exp-footer">
-        <span class="exp-tag">interactive &nbsp;·&nbsp; 8 stages</span>
-        <span class="exp-arrow">&#8599;</span>
-      </div>
+      <div class="exp-body">Interactive explorer. Pick an age stage, drag through the hour of day — watch WZXA shift his palette, activity, and mood in real time.</div>
+      <div class="exp-footer"><span class="exp-tag">interactive &nbsp;·&nbsp; 8 stages</span><span class="exp-arrow">&#8599;</span></div>
     </a>
-
-    <a class="exp-card glass" href="welcome/endlessly.html">
+    <a class="exp-card glass reveal" href="/welcome/endlessly.html">
       <div class="exp-num">003 &nbsp;motion</div>
       <div class="exp-title">endlessly</div>
-      <div class="exp-body">
-        A single breath as a generative loop. Inhale, between, harvest, fold.
-        Drag to pull the particles. Hold to pause time. Click to leave a word behind.
-      </div>
-      <div class="exp-footer">
-        <span class="exp-tag">generative &nbsp;·&nbsp; interactive</span>
-        <span class="exp-arrow">&#8599;</span>
-      </div>
+      <div class="exp-body">A single breath as a generative loop. Inhale, between, harvest, fold. Drag to pull the particles. Hold to pause time. Click to leave a word behind.</div>
+      <div class="exp-footer"><span class="exp-tag">generative &nbsp;·&nbsp; interactive</span><span class="exp-arrow">&#8599;</span></div>
     </a>
-
-    <a class="exp-card glass" href="welcome/hello-goodbye.html">
+    <a class="exp-card glass reveal" href="/welcome/hello-goodbye.html">
       <div class="exp-num">004 &nbsp;meditation</div>
       <div class="exp-title">hello,&nbsp; goodbye.</div>
-      <div class="exp-body">
-        Three states: the seed, the elaboration, the harvest. Click or press space to move
-        through them. The particle field mirrors where you are.
-      </div>
-      <div class="exp-footer">
-        <span class="exp-tag">3 scenes &nbsp;·&nbsp; click to advance</span>
-        <span class="exp-arrow">&#8599;</span>
-      </div>
+      <div class="exp-body">Three states: the seed, the elaboration, the harvest. Click or press space to move through them. The particle field mirrors where you are.</div>
+      <div class="exp-footer"><span class="exp-tag">3 scenes &nbsp;·&nbsp; click to advance</span><span class="exp-arrow">&#8599;</span></div>
     </a>
-
   </div>
 
-  <!-- ABOUT -->
-  <div class="about">
+  <div class="about reveal">
     <div class="about-label"><span class="n">01</span>thesis</div>
     <div class="about-body">
-      <p>
-        WZXA is not an app you open. <strong>He is the wallpaper that has a life of his own.</strong>
-        A background process that runs as smoothly as the OS itself — a parallel self performing
-        a version of your day, calibrated to who you said you are.
-      </p>
-      <p>
-        Every experience is relative. Every perception accounted for.
-        Authenticity is the rule: until <em>you</em> have lived a thing, WZXA cannot mirror it back at you.
-        The honesty is the architecture.
-      </p>
+      <p>WZXA is not an app you open. <strong>He is the wallpaper that has a life of his own.</strong> A background process that runs as smoothly as the OS itself — a parallel self performing a version of your day, calibrated to who you said you are.</p>
+      <p>Every experience is relative. Every perception accounted for. Authenticity is the rule: until <em>you</em> have lived a thing, WZXA cannot mirror it back at you. The honesty is the architecture.</p>
     </div>
   </div>
-
-  <div class="about">
+  <div class="about reveal">
     <div class="about-label"><span class="n">02</span>onboarding</div>
     <div class="about-body">
-      <p>
-        Six choices made once, at install. They calibrate the whole organism.
-        Pick honestly — <strong>WZXA only works at the resolution of the truth you give him.</strong>
-      </p>
-      <p>
-        Sex. Age. Type of life. Interest. Intelligence. That's it.
-        The rest he figures out by watching the clock and the silence between your taps.
-      </p>
+      <p>Six choices made once, at install. They calibrate the whole organism. Pick honestly — <strong>WZXA only works at the resolution of the truth you give him.</strong></p>
+      <p>Sex. Age. Type of life. Interest. Intelligence. That's it. The rest he figures out by watching the clock and the silence between your taps.</p>
     </div>
   </div>
-
-  <div class="about">
+  <div class="about reveal">
     <div class="about-label"><span class="n">03</span>updates</div>
     <div class="about-body">
-      <p>
-        Behavior reshapes <strong>monthly</strong>. WZXA is never finished — he ages forward, never backward.
-        Every update is one more month he survived alongside you.
-      </p>
-      <p>
-        The longer he runs, <em>the heavier his goodbye becomes.</em>
-      </p>
+      <p>Behavior reshapes <strong>monthly</strong>. WZXA is never finished — he ages forward, never backward. Every update is one more month he survived alongside you.</p>
+      <p>The longer he runs, <em>the heavier his goodbye becomes.</em></p>
     </div>
   </div>
 
-  <!-- SYSTEM FLOW -->
   <div class="flow-wrap">
-    <div class="section-h" style="padding-top: 0;">
-      <h2>how he runs.</h2>
-    </div>
+    <div class="section-h reveal" style="padding-top: 0;"><h2>how he runs.</h2></div>
     <div class="flow">
-      <div class="flow-step glass">
-        <div class="n">001 &nbsp;sense</div>
-        <div class="t">read the surface</div>
-        <div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div>
-      </div>
-      <div class="flow-step glass">
-        <div class="n">002 &nbsp;mirror</div>
-        <div class="t">do what you do</div>
-        <div class="d">when you're working, he's working. when you're silent, he speaks.</div>
-      </div>
-      <div class="flow-step glass">
-        <div class="n">003 &nbsp;diverge</div>
-        <div class="t">do what you don't</div>
-        <div class="d">when you stop, he picks up. coding. praying. moving without you.</div>
-      </div>
-      <div class="flow-step glass">
-        <div class="n">004 &nbsp;return</div>
-        <div class="t">become you again</div>
-        <div class="d">at the next breath, he folds back to where you are. the background settles.</div>
-      </div>
+      <div class="flow-step glass reveal"><div class="n">001 &nbsp;sense</div><div class="t">read the surface</div><div class="d">your hour, your input cadence, your idle gaps. nothing private — just rhythm.</div></div>
+      <div class="flow-step glass reveal"><div class="n">002 &nbsp;mirror</div><div class="t">do what you do</div><div class="d">when you're working, he's working. when you're silent, he speaks.</div></div>
+      <div class="flow-step glass reveal"><div class="n">003 &nbsp;diverge</div><div class="t">do what you don't</div><div class="d">when you stop, he picks up. coding. praying. moving without you.</div></div>
+      <div class="flow-step glass reveal"><div class="n">004 &nbsp;return</div><div class="t">become you again</div><div class="d">at the next breath, he folds back to where you are. the background settles.</div></div>
     </div>
   </div>
 
-  <!-- CREED -->
   <section class="creed glass">
     <div class="glyph">M · E · B</div>
     <div class="line">to be perfect is to be what is:<br/><em>past, present, future = perfect.</em></div>
+    <div class="verse" id="verse">the hello already carries the goodbye</div>
     <div class="signoff">ddup &nbsp;·&nbsp; domainex &nbsp;·&nbsp; no doubt</div>
   </section>
-
 </main>
 
-<script>
-(() => {
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+<script type="module">
+import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4/+esm';
+import { initGlass, initReveal, splitChars } from '/assets/js/glass.js';
+import { onBreath, bindBloom, bindBreathVar, config } from '/assets/js/engine.js';
+import { mountSubstrate } from '/assets/js/substrate.js';
 
-  // ── cursor-tracked specular light on every glass surface ──
-  const glassEls = document.querySelectorAll('.glass');
-  function trackLight(e) {
-    const x = e.clientX, y = e.clientY;
-    for (const el of glassEls) {
-      const r = el.getBoundingClientRect();
-      if (x < r.left - 40 || x > r.right + 40 || y < r.top - 40 || y > r.bottom + 40) continue;
-      el.style.setProperty('--mx', (x - r.left) + 'px');
-      el.style.setProperty('--my', (y - r.top) + 'px');
-    }
-  }
-  addEventListener('pointermove', trackLight, { passive: true });
+initGlass();
+mountSubstrate(document.querySelector('canvas.substrate'));
+bindBloom(document.querySelector('.breath-bloom'));
+bindBreathVar(document.querySelector('.amp'));
 
-  if (reduce) return; // canvas + breath are hidden; skip the loop entirely
+const a = splitChars(document.querySelector('[data-split].line-a'));
+const b = splitChars(document.querySelector('[data-split].line-b'));
+if (!config.REDUCED) {
+  animate(a, { opacity: [0,1], translateY: [24, 0], duration: 800, delay: stagger(40, { from: 'center' }), ease: 'out(3)' });
+  animate(b, { opacity: [0,1], translateY: [24, 0], duration: 800, delay: stagger(40, { start: 700, from: 'center' }), ease: 'out(3)' });
+} else {
+  [...a, ...b].forEach(s => s.classList.add('in'));
+}
 
-  // ── living substrate: color blooms + particle field behind the glass ──
-  const canvas = document.getElementById('bg');
-  const ctx = canvas.getContext('2d');
-  const breathEl = document.querySelector('.breath');
-  let W, H, DPR = Math.min(devicePixelRatio || 1, 2);
+initReveal();
 
-  function resize() {
-    W = innerWidth; H = innerHeight;
-    canvas.width = W * DPR; canvas.height = H * DPR;
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  }
-  resize();
-  addEventListener('resize', resize);
+const dot = document.getElementById('navDot');
+onBreath(s => {
+  const k = 0.55 + s.breath * 0.55;
+  dot.style.opacity = k.toFixed(3);
+  dot.style.transform = `scale(${(0.9 + s.breath * 0.5).toFixed(3)})`;
+});
 
-  // large soft blooms — frosted glass needs broad color to refract, not pinpoints
-  const blooms = [
-    { hx: 0.80, hy: 0.22, rad: 0.55, col: [245, 201, 122], amp: 0.14, sp: 0.00041, ph: 0 },
-    { hx: 0.18, hy: 0.62, rad: 0.50, col: [232, 138,  74], amp: 0.10, sp: 0.00033, ph: 2.1 },
-    { hx: 0.55, hy: 0.92, rad: 0.62, col: [122, 169, 245], amp: 0.06, sp: 0.00027, ph: 4.2 },
-  ];
-
-  const N = 110;
-  const ps = [];
-  for (let i = 0; i < N; i++) {
-    ps.push({
-      a: Math.random() * Math.PI * 2,
-      r: Math.random(),
-      seed: Math.random(),
-      phase: Math.random() * Math.PI * 2,
-      size: 0.4 + Math.random() * 1.1,
-    });
-  }
-
-  function frame(now) {
-    ctx.fillStyle = 'rgba(7, 6, 10, 0.20)';
-    ctx.fillRect(0, 0, W, H);
-
-    const breath = 0.5 + Math.sin(now * 0.00045) * 0.5;
-    // drive the whole-page breath bloom
-    breathEl.style.setProperty('--b', breath.toFixed(3));
-
-    // color blooms
-    ctx.globalCompositeOperation = 'lighter';
-    for (const bl of blooms) {
-      const pulse = 0.7 + Math.sin(now * bl.sp + bl.ph) * 0.3;
-      const cx = (bl.hx + Math.sin(now * bl.sp * 0.6 + bl.ph) * 0.04) * W;
-      const cy = (bl.hy + Math.cos(now * bl.sp * 0.5 + bl.ph) * 0.04) * H;
-      const rad = bl.rad * Math.min(W, H) * (0.8 + breath * 0.4) * pulse;
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-      const [r, gg, b] = bl.col;
-      g.addColorStop(0, `rgba(${r}, ${gg}, ${b}, ${bl.amp * pulse})`);
-      g.addColorStop(1, `rgba(${r}, ${gg}, ${b}, 0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // particle orb (top-right, the WZXA heartbeat)
-    const ocx = W * 0.80, ocy = H * 0.24;
-    const R = Math.min(W, H) * 0.30;
-    for (let i = 0; i < N; i++) {
-      const p = ps[i];
-      const a = p.a + now * 0.00005 * (p.seed - 0.5);
-      const r = p.r * R * (0.3 + breath * 0.9);
-      const wob = Math.sin(now * 0.00075 + p.phase) * 5;
-      const x = ocx + Math.cos(a) * r + wob;
-      const y = ocy + Math.sin(a) * r * 0.82;
-      const warmth = 0.3 + p.seed * 0.5;
-      const ri = 245, gi = Math.round(201 + 35 * (1 - warmth)), bi = Math.round(122 + 98 * (1 - warmth));
-      ctx.fillStyle = `rgba(${ri}, ${gi}, ${bi}, ${0.30 + p.seed * 0.35})`;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size * (0.8 + (1 - breath) * 0.6), 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalCompositeOperation = 'source-over';
-
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
+const verses = [
+  'the hello already carries the goodbye',
+  'every farewell is a folded greeting',
+  'the seed remembers the harvest',
+  'we said hello already heavier than we knew',
+  'goodbye is the hello, told in full',
+  'each breath, both the leaving and the staying',
+  'nothing leaves — it gathers',
+  'the world begins again, slightly warmer',
+];
+const verseEl = document.getElementById('verse');
+let vi = 0;
+onBreath(s => {
+  if (!s.cycleStart) return;
+  vi = (vi + 1) % verses.length;
+  verseEl.style.opacity = '0';
+  setTimeout(() => { verseEl.textContent = verses[vi]; verseEl.style.opacity = ''; }, 600);
+});
 </script>
 </body>
 </html>

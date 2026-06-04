@@ -2,21 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>endlessly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>endlessly — DDUP · DOMAINEX</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/css/system.css" />
 <style>
-  :root {
-    --bg: #07060a;
-    --ink: #f4ecdc;
-    --warm: #f5c97a;
-    --ember: #e88a4a;
-    --dim: rgba(244, 236, 220, 0.42);
-    --faint: rgba(244, 236, 220, 0.14);
-    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-    --serif: "Cormorant Garamond", Iowan Old Style, Georgia, serif;
-  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
@@ -89,12 +82,13 @@
   }
   .breath-meter::after {
     content: '';
-    position: absolute; left: 50%; top: -3px;
+    position: absolute; left: calc(var(--p, 0) * 100%); top: -3px;
     width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--ink);
     box-shadow: 0 0 12px var(--warm);
     transform: translate(-50%, 0);
+    transition: left 120ms linear;
   }
 
   .corner {
@@ -354,14 +348,9 @@
       ctx.fill();
     }
 
-    // breath meter dot
+    // breath meter dot — position via CSS var consumed in the ::after rule
     const meter = document.getElementById('meter');
-    if (meter) {
-      // map phase 0..1 to meter position with easing emphasis on compressed states
-      meter.style.setProperty('--p', phase);
-      const x = (phase) * 220;
-      meter.querySelector ? null : null; // placeholder
-    }
+    if (meter) meter.style.setProperty('--p', phase);
 
     // update breath label
     updateLabel(phase);

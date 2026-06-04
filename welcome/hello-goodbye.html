@@ -2,21 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>hello, world / goodbye, world</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>hello, goodbye — DDUP · DOMAINEX</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/css/system.css" />
 <style>
-  :root {
-    --bg: #0a0908;
-    --ink: #f2ece1;
-    --dim: rgba(242, 236, 225, 0.45);
-    --faint: rgba(242, 236, 225, 0.18);
-    --warm: #f4c97a;
-    --mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
-    --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  }
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); }
+  html, body { height: 100%; overflow: hidden; }
   body { font-family: var(--mono); }
 
   canvas {
@@ -101,8 +95,10 @@
   }
   .nav button {
     pointer-events: auto;
-    background: transparent;
-    border: 1px solid var(--faint);
+    background: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
     color: var(--dim);
     font-family: var(--mono);
     font-size: 10px;
@@ -110,13 +106,10 @@
     text-transform: uppercase;
     padding: 10px 16px;
     cursor: pointer;
-    transition: all 350ms ease;
-    border-radius: 1px;
+    transition: color 350ms ease, background 350ms ease, border-color 350ms ease;
+    border-radius: 9999px;
   }
-  .nav button:hover {
-    color: var(--ink);
-    border-color: var(--dim);
-  }
+  .nav button:hover { color: var(--ink); border-color: rgba(245, 201, 122, 0.4); }
   .nav button.active {
     color: var(--bg);
     background: var(--ink);
@@ -304,12 +297,12 @@
       p.y += p.vy;
     }
 
-    // connections — only in scene 1 (in between)
+    // connections — only in scene 1 (in between) — capped to nearby neighbours
     if (scene === 1) {
       ctx.lineWidth = 0.4;
       for (let i = 0; i < N; i++) {
         const a = particles[i];
-        for (let j = i + 1; j < N; j++) {
+        for (let j = i + 1; j < i + 16 && j < N; j++) {
           const b = particles[j];
           const dx = a.x - b.x, dy = a.y - b.y;
           const d2 = dx * dx + dy * dy;

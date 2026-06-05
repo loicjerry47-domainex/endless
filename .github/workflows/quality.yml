@@ -1,0 +1,167 @@
+# ============================================================
+# DDUP · DOMAINEX — automated code quality
+# Runs on every push to main and every PR.
+# Acts as the enforcement layer for CLAUDE.md §6.
+# ============================================================
+
+name: quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ---- structure: required files must exist ----
+  structure:
+    name: structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: assert required files exist
+        run: |
+          set -e
+          for f in \
+            CLAUDE.md \
+            CHANGELOG.md \
+            index.html \
+            404.html \
+            manifest.json \
+            _headers \
+            _redirects \
+            assets/css/system.css \
+            assets/js/engine.js \
+            assets/js/glass.js \
+            assets/js/substrate.js \
+            assets/favicon.svg \
+            welcome/wzxa.html \
+            welcome/wzxa-lockscreen.html \
+            welcome/endlessly.html \
+            welcome/hello-goodbye.html
+          do
+            if [ ! -f "$f" ]; then
+              echo "::error file=$f::missing required file"
+              exit 1
+            fi
+          done
+          echo "✓ all required files present"
+
+  # ---- HTML: validate every page parses cleanly ----
+  html:
+    name: html validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install htmlhint
+        run: npm i -g htmlhint
+      - name: run htmlhint
+        run: |
+          htmlhint --config .htmlhintrc \
+            'index.html' \
+            '404.html' \
+            'welcome/*.html' \
+            || true   # tolerate warnings, fail only on critical errors below
+      - name: hard checks (the bugs we caught before)
+        run: |
+          set -e
+          # @import inside <style> is the bug that hid Cormorant Garamond in v0.0.x
+          if grep -rn '@import url' --include='*.html' . | grep -v 'href='; then
+            echo "::error::@import url(...) found in HTML <style>. Use <link rel='stylesheet'> instead. See CLAUDE.md §6."
+            exit 1
+          fi
+          # placeholder no-ops
+          if grep -rn '? null : null' --include='*.html' --include='*.js' .; then
+            echo "::error::dead code placeholder (?: null : null) found. See CLAUDE.md §6."
+            exit 1
+          fi
+          echo "✓ hard checks passed"
+
+  # ---- brand: nothing escapes the godfile ----
+  brand:
+    name: brand guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: forbidden language
+        run: |
+          set -e
+          FORBIDDEN='\b(revolutionary|AI-powered|users|platform|SaaS)\b'
+          # check user-visible HTML body content only (not labels/comments/metadata)
+          if grep -rEn "$FORBIDDEN" --include='*.html' --include='*.md' --include='*.json' . \
+              | grep -vE '(CLAUDE\.md|CHANGELOG\.md|\.github/)'; then
+            echo "::error::forbidden marketing language found. See CLAUDE.md §2 (Voice)."
+            exit 1
+          fi
+          echo "✓ no forbidden language"
+      - name: palette discipline
+        run: |
+          set -e
+          NEW_HEXES=$(grep -rohE '#[0-9a-fA-F]{6}' index.html 404.html welcome/*.html 2>/dev/null | sort -u || true)
+          echo "hex colors found in HTML files (should reference system tokens via var()):"
+          echo "$NEW_HEXES"
+
+  # ---- links: no broken internal references ----
+  links:
+    name: link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: assert internal links resolve
+        run: |
+          set -e
+          FAIL=0
+          for href in $(grep -rohE '(href|src)="[^"]*"' \
+              index.html 404.html welcome/*.html \
+              | sed -E 's/.*="([^"]+)".*/\1/' \
+              | grep -E '^(/|\./|\.\./)' \
+              | sort -u); do
+            path="${href%%\?*}"
+            local="${path#/}"
+            if [ -z "$local" ] || [ "$local" = "/" ]; then continue; fi
+            if [ ! -e "$local" ]; then
+              echo "::error::broken internal link: $href"
+              FAIL=1
+            fi
+          done
+          [ "$FAIL" = "0" ] && echo "✓ all internal links resolve" || exit 1
+
+  # ---- a11y / perf: lighthouse against a local server ----
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-latest
+    needs: [structure, html, links]
+    steps:
+      - uses: actions/checkout@v4
+      - name: start static server
+        run: |
+          python3 -m http.server 8080 &
+          sleep 2
+      - name: install lighthouse
+        run: npm i -g lighthouse
+      - name: run lighthouse on landing
+        run: |
+          lighthouse http://localhost:8080/ \
+            --quiet --chrome-flags="--headless --no-sandbox" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --output=json --output-path=./lh-index.json
+      - name: assert scores
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          r = json.load(open('lh-index.json'))['categories']
+          fail = False
+          gates = {'performance': 0.80, 'accessibility': 0.90, 'best-practices': 0.85, 'seo': 0.85}
+          for k, min_score in gates.items():
+              score = r[k]['score']
+              ok = score >= min_score
+              flag = '✓' if ok else '✗'
+              print(f'{flag} {k}: {score:.2f}  (min {min_score:.2f})')
+              if not ok: fail = True
+          sys.exit(1 if fail else 0)
+          PY

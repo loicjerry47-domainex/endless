@@ -189,10 +189,10 @@
 import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/animejs@4/+esm';
 import { initGlass, initReveal, splitChars } from '/assets/js/glass.js';
 import { onBreath, bindBloom, bindBreathVar, config } from '/assets/js/engine.js';
-import { mountSubstrate } from '/assets/js/substrate.js';
+import { mountHero } from '/assets/js/hero.js';
 
 initGlass();
-mountSubstrate(document.querySelector('canvas.substrate'));
+mountHero(document.querySelector('canvas.substrate'));
 bindBloom(document.querySelector('.breath-bloom'));
 bindBreathVar(document.querySelector('.amp'));
 

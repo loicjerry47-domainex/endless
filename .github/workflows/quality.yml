@@ -39,6 +39,7 @@ jobs:
             assets/js/engine.js \
             assets/js/glass.js \
             assets/js/substrate.js \
+            assets/js/hero.js \
             assets/favicon.svg \
             welcome/wzxa.html \
             welcome/wzxa-lockscreen.html \

@@ -6,6 +6,47 @@ Format: reverse-chronological. Keep entries terse. Link commits where useful.
 
 ---
 
+## v0.2.0 · the breathing seed — 2026-06-05
+
+The landing hero is now a WebGL2 fragment shader. The substrate stays on prototypes + 404; landing renders something genuinely cinematic.
+
+### added
+- `assets/js/hero.js` — vanilla WebGL2 fluid hero. Fullscreen quad, custom shader, ~280 LOC. Features:
+  - **domain-warped multi-bloom** field — three brand-colored gaussians (warm / ember / cool, sparing) drift on fbm noise
+  - **radial lensing** centred on the seed — pixels pulled inward, lens strength inversely tied to breath
+  - **photon ring** — visible only during compressed phases (hello + fold); the optical "next-gen" tell
+  - **pointer-driven transient bloom** — soft warm halo follows the cursor with easing
+  - **scroll-coupled vignette** — `--scroll-y` uniform recedes the hero as you scroll past it
+  - all colors sourced from `:root` CSS tokens at mount (no hardcoded hex)
+  - graceful fallback to `substrate.js` if WebGL2 is unavailable
+  - reduced-motion → canvas hidden entirely, engine not started
+  - dev params overlay when `?dev` is in the URL (no lil-gui dep)
+
+### changed
+- `index.html` — `mountSubstrate` swapped for `mountHero` on the landing canvas only.
+- `CLAUDE.md` §5 — architecture diagram now lists `hero.js`; substrate.js scope clarified to 404 + prototypes.
+
+### unchanged (deliberate)
+- `substrate.js` stays the engine on `404.html` and all `welcome/*` pages — they keep the lighter Canvas2D field; the WebGL hero is reserved for the landing.
+- One global breath clock. No new RAF.
+- No new colors, fonts, easings, or libraries (no Three.js, no GSAP — see CLAUDE.md §5 + §6).
+
+### checkpoint
+- [x] All hero motion subscribes to `engine.js` (no private RAF for breath state)
+- [x] `prefers-reduced-motion` short-circuits the entire WebGL pipeline
+- [x] DPR capped at 1.75 (perf gate)
+- [x] No new accent colors — palette read from CSS at runtime
+- [x] WebGL2 unavailable → automatic fallback to substrate.js
+- [x] Tab hidden / off-screen → render paused (battery)
+
+### tweak guide
+First three knobs in `hero.js` if you want to dial it:
+1. **`lensK`** (line ~107): how aggressively the seed bends light. Higher = more gravitational feel.
+2. **`seedR`** range (line ~115): the seed's compressed-vs-expanded size. Tighter = more focal.
+3. **`warpK`** (line ~99): fluid drift amount. Higher = more turbulent.
+
+---
+
 ## v0.1.0 · the breath made one — 2026-06-04
 
 Full visual rebuild. Six phases shipped: shared design system, anime.js motion, living typography, scroll choreography, prototypes brought into one material, polish layer.

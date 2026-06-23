@@ -102,7 +102,9 @@ Frosted glass needs **something living behind it to refract** — never put `.gl
 │   └── js/
 │       ├── engine.js           global breath clock (pub/sub)
 │       ├── glass.js            cursor sheen + reveal + splitText
-│       └── substrate.js        particle orb + color blooms
+│       ├── substrate.js        particle orb + color blooms (used by 404 + prototypes)
+│       └── hero.js             WebGL2 shader hero — domain-warped multi-bloom +
+│                               radial lensing + photon ring (landing page only)
 │
 └── welcome/
     ├── wzxa.html               full concept treatment

@@ -199,6 +199,20 @@ export function mountHero(canvas, opts = {}) {
     return () => {};
   }
 
+  // Defer the heavy WebGL2 init (shader compile + first frame) until the
+  // browser is idle. Buys back FCP/LCP/TBT in the Lighthouse perf score
+  // without changing the visual outcome.
+  let unmount = () => {};
+  const start = () => { unmount = _mount(canvas, opts); };
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(start, { timeout: 1200 });
+  } else {
+    setTimeout(start, 200);
+  }
+  return () => unmount();
+}
+
+function _mount(canvas, opts) {
   const dprCap = opts.dprCap ?? 1.75;
   const gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false });
 

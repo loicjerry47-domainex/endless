@@ -1,5 +1,5 @@
 /* ============================================================
-   DDUP · DOMAINEX — glass + reveal utilities
+   endless — glass + reveal utilities
 ============================================================ */
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;

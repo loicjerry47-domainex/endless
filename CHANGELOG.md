@@ -6,6 +6,32 @@ Format: reverse-chronological. Keep entries terse. Link commits where useful.
 
 ---
 
+## v0.3.0 · the name is endless — 2026-06-23
+
+`DDUP · DOMAINEX` was the working codename through v0.0.x. The product name is **endless**. Cleaned up every user-visible mention so the chrome reads as one thing.
+
+### changed
+- `index.html` — `<title>`, OG title, nav brand, creed signoff → all read `endless`.
+- `404.html`, `welcome/*.html` — page titles `… — endless` instead of `… — DDUP · DOMAINEX`.
+- `manifest.json` — `name: "endless"`.
+- `README.md` — closing line `endless · no doubt`.
+- file-header comments in `system.css`, `engine.js`, `glass.js`, `substrate.js`, `hero.js`, `quality.yml` — match.
+- `CLAUDE.md` §1: explicit naming hierarchy (`endless` is the product name; `WZXA` is the in-world character; `DDUP · DOMAINEX` retired).
+- `CLAUDE.md` §2 voice rule — `endless` is always lowercase; only `WZXA` and `M · E · B` stay uppercase.
+
+### unchanged
+- The codename `WZXA` still appears in the hero kicker (`codename WZXA · background companion`) because the brand thesis names it explicitly.
+- Repo slug is still `loicjerry47-domainex/endless` (no rename needed — already correct).
+- Cloudflare Pages domain `endless-bjy.pages.dev` (unchanged).
+
+### checkpoint
+- [x] No new colors, fonts, or libraries
+- [x] All page titles end in `— endless`
+- [x] Manifest, OG, theme-color all consistent
+- [x] No remaining DDUP/DOMAINEX strings in user-visible HTML
+
+---
+
 ## v0.2.1 · CI honest about the tradeoff — 2026-06-23
 
 First CI run on `1798ba2` flagged the perf score: **0.38** vs a 0.80 gate (a11y / best-practices / SEO all 1.00). Real cause is the WebGL2 hero hitting Lighthouse's simulated Moto G4 on slow 4G — design choice, not bug.

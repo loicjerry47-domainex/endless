@@ -1,5 +1,5 @@
 /* ============================================================
-   DDUP · DOMAINEX — global breath engine
+   endless — global breath engine
    One RAF loop. Every visual surface subscribes.
 ============================================================ */
 

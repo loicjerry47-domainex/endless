@@ -1,5 +1,5 @@
 /* ============================================================
-   DDUP · DOMAINEX — the breathing seed (hero)
+   endless — the breathing seed (hero)
    WebGL2 fragment shader. Domain-warped multi-bloom + radial
    lensing + photon ring. Subscribes to engine.js (no private
    RAF loop — see CLAUDE.md §3).

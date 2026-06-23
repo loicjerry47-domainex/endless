@@ -57,4 +57,4 @@ python3 -m http.server 8000
 
 ---
 
-*ddup · domainex · no doubt*
+*endless · no doubt*

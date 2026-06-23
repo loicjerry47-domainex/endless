@@ -1,5 +1,5 @@
 # ============================================================
-# DDUP · DOMAINEX — automated code quality
+# endless — automated code quality
 # Runs on every push to main and every PR.
 # Acts as the enforcement layer for CLAUDE.md §6.
 # ============================================================

@@ -6,7 +6,7 @@
 
 ## 1. What this is
 
-**DDUP · DOMAINEX → `endless`** is the public face of **WZXA**, a background companion concept:
+**endless** is the public face of **WZXA**, a background companion concept. *(`DDUP · DOMAINEX` was the working codename through v0.0.x — it is no longer used in user-visible chrome. WZXA stays as the in-world product/character name.)*
 
 > *He lives & so do you.*
 > A theme that breathes. An autonomous companion living quietly in the background of your device — aging when you age, vibing when you vibe, doing the thing you should be doing when you aren't.
@@ -41,7 +41,7 @@
 Type sizes use `clamp(min, fluid, max)`. No magic px sizes on display type.
 
 ### Voice
-- lowercase by default except brand marks (DDUP · DOMAINEX, WZXA, M · E · B).
+- lowercase by default. `endless` is always lowercase. The only uppercase marks are **WZXA** and **M · E · B**.
 - italic for thesis lines, mono uppercase for labels/captions.
 - writing is **terse, declarative, slightly cryptic.** Compare:
   - ✅ "he ages with you."

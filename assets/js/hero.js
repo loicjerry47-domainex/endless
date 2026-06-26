@@ -1,8 +1,9 @@
 /* ============================================================
    endless — the breathing seed (hero)
    WebGL2 fragment shader. Domain-warped multi-bloom + radial
-   lensing + photon ring. Subscribes to engine.js (no private
-   RAF loop — see CLAUDE.md §3).
+   lensing + photon ring + chromatic aberration + cycle pulse
+   + idle deepening + hero text gravity + ACES tonemap.
+   Subscribes to engine.js (no private RAF loop, see CLAUDE.md §3).
 ============================================================ */
 
 import { onBreath, config } from './engine.js';
@@ -21,20 +22,21 @@ in  vec2 v_uv;
 out vec4 fragColor;
 
 uniform float u_time;
-uniform float u_breath;        // 0..1 from engine.js
-uniform float u_phase;         // 0..1 cycle position
-uniform float u_scroll;        // 0..1, drives camera distance
-uniform vec2  u_pointer;       // 0..1 (normalised viewport)
-uniform vec2  u_resolution;    // px
+uniform float u_breath;
+uniform float u_phase;
+uniform float u_scroll;
+uniform float u_idle;       // 0..1; 1 = meditative, no recent activity
+uniform float u_pulse;      // 0..1; ramps after each cycle start, decays
+uniform vec2  u_pointer;
+uniform vec2  u_textAmp;    // ampersand glyph centre in 0..1 viewport coords
+uniform vec2  u_resolution;
 
-// brand palette as uniforms — sourced from CSS custom properties at init
-uniform vec3 u_warm;           // --warm
-uniform vec3 u_ember;          // --ember
-uniform vec3 u_cool;           // --cool
-uniform vec3 u_ink;            // --ink
-uniform vec3 u_bg;             // --bg
+uniform vec3 u_warm;
+uniform vec3 u_ember;
+uniform vec3 u_cool;
+uniform vec3 u_ink;
+uniform vec3 u_bg;
 
-// ── value noise (cheap, smooth, GPU-friendly) ───────────────
 float hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
@@ -53,16 +55,19 @@ float fbm(vec2 p) {
   return s;
 }
 
-// ── domain warp: fluid drift ────────────────────────────────
-vec2 warp(vec2 uv, float t, float k) {
-  float n1 = fbm(uv * 2.2 + vec2(t * 0.05, 0.0));
-  float n2 = fbm(uv * 2.2 + vec2(0.0, t * 0.05) + 13.7);
-  return uv + (vec2(n1, n2) - 0.5) * k;
+// Curl noise: divergence-free 2D flow from the perpendicular gradient of fbm.
+// Reads as fluid (orbits, eddies) rather than the random shake of plain fbm.
+vec2 fbmGrad(vec2 p) {
+  float eps = 0.012;
+  float gx = fbm(p + vec2(eps, 0.0)) - fbm(p - vec2(eps, 0.0));
+  float gy = fbm(p + vec2(0.0, eps)) - fbm(p - vec2(0.0, eps));
+  return vec2(gx, gy) / (2.0 * eps);
+}
+vec2 curlWarp(vec2 uv, float t, float k) {
+  vec2 g = fbmGrad(uv * 2.0 + vec2(t * 0.045, t * 0.03));
+  return uv + vec2(g.y, -g.x) * k;
 }
 
-// ── radial lensing toward the seed ──────────────────────────
-// Brand-tuned analogue of gravitational lensing: pixels near the
-// seed are pulled radially inward, distorting whatever they sample.
 vec2 lens(vec2 uv, vec2 c, float strength, float falloff) {
   vec2 r = uv - c;
   float d = length(r);
@@ -70,91 +75,112 @@ vec2 lens(vec2 uv, vec2 c, float strength, float falloff) {
   return uv - r * pull;
 }
 
-// ── soft gaussian bloom ─────────────────────────────────────
 float bloom(vec2 uv, vec2 c, float radius) {
   float d = length(uv - c);
   return exp(-d * d / (radius * radius));
 }
 
+// ACES filmic tonemap (Narkowicz approximation). Maps HDR additive light to
+// LDR display response with a real shoulder. The single biggest visual lift.
+vec3 aces(vec3 x) {
+  return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
+}
+
+// Interleaved Gradient Noise (Jorge Jimenez). Cheap blue-noise-like dither.
+// Replaces a random-hash grain; less twitchy, kills banding more elegantly.
+float ign(vec2 p) {
+  return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));
+}
+
 void main() {
-  // aspect-corrected uv (-1..1 vertically, scaled horizontally)
   vec2 aspect = vec2(u_resolution.x / u_resolution.y, 1.0);
-  vec2 uv = (v_uv - 0.5) * aspect + 0.5;
-  vec2 uvBase = uv;
+  vec2 uvAR = (v_uv - 0.5) * aspect + 0.5;
+  vec2 baseUV = uvAR;
 
-  // 1. domain warp — grows with breath
-  float warpK = 0.025 + u_breath * 0.06;
-  uv = warp(uv, u_time, warpK);
+  // Idle slows the apparent flow.
+  float idleSlow = mix(1.0, 0.55, u_idle);
+  float warpTime = u_time * idleSlow;
 
-  // 2. lensing centred on the seed; stronger during compressed phases
-  vec2 seed = vec2(0.78, 0.34) * aspect;
-  seed.x -= aspect.x * 0.5;
-  seed.x += 0.5 * aspect.x;
+  // 1. Curl warp; grows with breath, eases off when idle.
+  float warpK = (0.022 + u_breath * 0.05) * mix(1.0, 0.78, u_idle);
+  vec2 uv = curlWarp(uvAR, warpTime, warpK);
+
+  // 2. Seed centre: brand anchor lerped 10% toward the live ampersand.
+  vec2 seedAnchor = vec2(0.78, 0.34);
+  seedAnchor.x = seedAnchor.x * aspect.x - aspect.x * 0.5 + 0.5 * aspect.x;
+  vec2 textTarget = vec2(u_textAmp.x * aspect.x - (aspect.x - 1.0) * 0.5, u_textAmp.y);
+  vec2 seed = mix(seedAnchor, textTarget, 0.10);
+
+  // 3. Lensing: stronger during compressed phases.
   float lensK = (1.0 - u_breath) * 0.55 + 0.08;
   uv = lens(uv, seed, lensK, 22.0);
 
   vec3 col = vec3(0.0);
 
-  // 3. three brand blooms — match substrate.js so the page reads continuous
-  //    warm (top-right), ember (left-mid), cool (bottom, sparing)
-  vec2 b1 = vec2(0.78, 0.34) * aspect; b1.x = mix(0.5 * aspect.x, b1.x, 1.0);
+  // 4. Three brand blooms.
+  vec2 b1 = seedAnchor;
   vec2 b2 = vec2(0.18, 0.62) * aspect;
   vec2 b3 = vec2(0.55, 0.92) * aspect;
-
   float br = 0.32 * (0.85 + u_breath * 0.45);
-  col += u_warm  * bloom(uv, b1, br * 0.95) * (0.85 + u_breath * 0.30);
+  float energy = 0.85 + u_breath * 0.30;
+  col += u_warm  * bloom(uv, b1, br * 0.95) * energy;
   col += u_ember * bloom(uv, b2, br * 0.85) * (0.55 + u_breath * 0.20);
   col += u_cool  * bloom(uv, b3, br * 1.05) * (0.18 + u_breath * 0.08);
 
-  // 4. the seed itself — compressed light that pulses with the cycle.
-  //    radius shrinks during hello/fold (compressed), expands at exhale.
+  // 5. The seed itself, with lateral chromatic aberration during compressed
+  //    phases. Per-channel offsets give a faint rainbow rim; real-lens tell.
   float seedR = mix(0.055, 0.090, u_breath);
-  float seedDensity = (1.0 - u_scroll * 0.5);
-  col += u_warm * bloom(uv, seed, seedR) * 1.8 * seedDensity;
-
-  // 5. photon ring — visible only when compressed (hello + fold).
-  //    The optical signature that says "this is more than a gradient."
+  float seedDensity = 1.0 - u_scroll * 0.5;
+  float caAmt = (1.0 - u_breath) * 0.008;
   vec2 sr = uv - seed;
-  float ringD = abs(length(sr) - seedR * 2.6);
-  float ring = exp(-ringD * ringD / 0.0010);
-  col += mix(u_warm, u_ink, 0.4) * ring * 0.55 * (1.0 - u_breath) * seedDensity;
+  vec2 caDir = normalize(sr + 1e-5);
+  vec3 seedCol = u_warm * 1.8 * seedDensity;
+  col.r += seedCol.r * bloom(uv + caDir * caAmt, seed, seedR);
+  col.g += seedCol.g * bloom(uv,                 seed, seedR);
+  col.b += seedCol.b * bloom(uv - caDir * caAmt, seed, seedR);
 
-  // 6. pointer-driven transient bloom (faint, slow follow)
-  vec2 pNorm = u_pointer * aspect;
-  pNorm.x = mix(0.5 * aspect.x, pNorm.x * aspect.x, 1.0) - aspect.x * 0.5 + 0.5 * aspect.x;
-  vec2 pp = u_pointer * aspect; pp.x = u_pointer.x * aspect.x;
-  float pd = length(uvBase - vec2(u_pointer.x * aspect.x - (aspect.x - 1.0) * 0.5, u_pointer.y));
+  // 6. Photon ring; brightens with idle so the seed sharpens when you stop.
+  float sd = length(sr);
+  float ringD = abs(sd - seedR * 2.6);
+  float ring = exp(-ringD * ringD / 0.0010);
+  float ringBoost = (1.0 - u_breath) * (1.0 + u_idle * 0.7);
+  col += mix(u_warm, u_ink, 0.4) * ring * 0.55 * ringBoost * seedDensity;
+
+  // 7. Cycle pulse: a soft radial wave that expands from the seed at each
+  //    cycle reset. Decays over the 2s pulse window. The site's heartbeat.
+  float pulseR = u_pulse * 0.6;
+  float pulseD = abs(sd - pulseR);
+  float pulseW = exp(-pulseD * pulseD / 0.0040);
+  col += u_warm * pulseW * 0.45 * (1.0 - u_pulse);
+
+  // 8. Pointer transient bloom.
+  vec2 pp = vec2(u_pointer.x * aspect.x - (aspect.x - 1.0) * 0.5, u_pointer.y);
+  float pd = length(baseUV - pp);
   col += u_warm * exp(-pd * pd / 0.020) * 0.12;
 
-  // 7. base + scroll-driven vignette (hero recedes as you scroll past it)
+  // 9. Base + scroll vignette.
   col += u_bg;
   vec2 vuv = v_uv - 0.5;
   float vig = 1.0 - dot(vuv, vuv) * (0.5 + u_scroll * 0.6);
   col *= vig;
 
-  // 8. film grain — avoids banding on the dark substrate
-  float g = hash21(v_uv * u_resolution + u_time * 100.0) - 0.5;
-  col += g * 0.012;
+  // 10. ACES tonemap, then ordered dither.
+  col = aces(col);
+  col += vec3(ign(gl_FragCoord.xy + u_time * 60.0) - 0.5) / 255.0;
 
   fragColor = vec4(col, 1.0);
 }`;
 
-// ── helpers ────────────────────────────────────────────────
 function cssVar(name) {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return v;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
-// parse "#rrggbb" or "rgba(r,g,b,a)" into [r,g,b] 0..1
 function parseColor(s) {
   if (s.startsWith('#')) {
     const h = s.slice(1);
     return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)].map(v => v / 255);
   }
   const m = s.match(/rgba?\(([^)]+)\)/);
-  if (m) {
-    const [r, g, b] = m[1].split(',').slice(0, 3).map(v => parseFloat(v) / 255);
-    return [r, g, b];
-  }
+  if (m) return m[1].split(',').slice(0, 3).map(v => parseFloat(v) / 255);
   return [0, 0, 0];
 }
 
@@ -180,28 +206,24 @@ function linkProgram(gl, vs, fs) {
   return p;
 }
 
-// ── mount ──────────────────────────────────────────────────
 /**
- * Mounts the hero on a <canvas> element.
- * Subscribes to engine.js (one global RAF). Returns an unmount fn.
+ * Mount the hero on a <canvas>. Subscribes to engine.js. Returns an unmount fn.
  *
  * @param {HTMLCanvasElement} canvas
  * @param {object} [opts]
- * @param {number} [opts.dprCap=1.75]   cap devicePixelRatio for perf
- * @param {number} [opts.scrollEl]      element whose scroll drives u_scroll (default: window)
+ * @param {number} [opts.dprCap=1.75]
+ * @param {Element|Window} [opts.scrollEl=window]
+ * @param {string} [opts.ampSelector='#heroAmp']
  */
 export function mountHero(canvas, opts = {}) {
   if (!canvas) return () => {};
 
-  // reduced-motion: skip the whole engine entirely
   if (config.REDUCED) {
     canvas.style.display = 'none';
     return () => {};
   }
 
-  // Defer the heavy WebGL2 init (shader compile + first frame) until the
-  // browser is idle. Buys back FCP/LCP/TBT in the Lighthouse perf score
-  // without changing the visual outcome.
+  // Defer heavy WebGL2 init past first paint to preserve LCP/FCP.
   let unmount = () => {};
   const start = () => { unmount = _mount(canvas, opts); };
   if ('requestIdleCallback' in window) {
@@ -214,11 +236,11 @@ export function mountHero(canvas, opts = {}) {
 
 function _mount(canvas, opts) {
   const dprCap = opts.dprCap ?? 1.75;
+  const ampSelector = opts.ampSelector ?? '#heroAmp';
   const gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false });
 
   if (!gl) {
-    // WebGL2 unavailable — fall back to the legacy substrate. Lazy import.
-    console.warn('hero: WebGL2 not available, using fallback substrate');
+    console.warn('hero: WebGL2 unavailable; falling back to substrate');
     import('./substrate.js').then(m => m.mountSubstrate(canvas));
     return () => {};
   }
@@ -228,7 +250,6 @@ function _mount(canvas, opts) {
   const prog = linkProgram(gl, vs, fs);
   if (!prog) return () => {};
 
-  // fullscreen quad
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
@@ -236,26 +257,22 @@ function _mount(canvas, opts) {
   gl.enableVertexAttribArray(aPos);
   gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
-  // uniform locations
-  const u = (name) => gl.getUniformLocation(prog, name);
-  const uTime = u('u_time'), uBreath = u('u_breath'), uPhase = u('u_phase'),
-        uScroll = u('u_scroll'), uPointer = u('u_pointer'), uRes = u('u_resolution'),
-        uWarm = u('u_warm'), uEmber = u('u_ember'), uCool = u('u_cool'),
-        uInk = u('u_ink'), uBg = u('u_bg');
+  const u = (n) => gl.getUniformLocation(prog, n);
+  const uTime    = u('u_time'),    uBreath  = u('u_breath'),  uPhase   = u('u_phase'),
+        uScroll  = u('u_scroll'),  uIdle    = u('u_idle'),    uPulse   = u('u_pulse'),
+        uPointer = u('u_pointer'), uTextAmp = u('u_textAmp'), uRes     = u('u_resolution'),
+        uWarm    = u('u_warm'),    uEmber   = u('u_ember'),   uCool    = u('u_cool'),
+        uInk     = u('u_ink'),     uBg      = u('u_bg');
 
-  // brand palette from CSS — single read at mount (rebuild on theme change)
-  let palette = readPalette();
-  function readPalette() {
-    return {
-      warm:  parseColor(cssVar('--warm')  || '#f5c97a'),
-      ember: parseColor(cssVar('--ember') || '#e88a4a'),
-      cool:  parseColor(cssVar('--cool')  || '#7aa9f5'),
-      ink:   parseColor(cssVar('--ink')   || '#f4ecdc'),
-      bg:    parseColor(cssVar('--bg')    || '#07060a'),
-    };
-  }
+  const palette = {
+    warm:  parseColor(cssVar('--warm')  || '#f5c97a'),
+    ember: parseColor(cssVar('--ember') || '#e88a4a'),
+    cool:  parseColor(cssVar('--cool')  || '#7aa9f5'),
+    ink:   parseColor(cssVar('--ink')   || '#f4ecdc'),
+    bg:    parseColor(cssVar('--bg')    || '#07060a'),
+  };
 
-  // size handling
+  // sizing
   let W = 0, H = 0;
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
@@ -267,15 +284,23 @@ function _mount(canvas, opts) {
     gl.viewport(0, 0, W, H);
   }
   resize();
-  const ro = new ResizeObserver(resize);
-  ro.observe(canvas);
+  const ro = new ResizeObserver(resize); ro.observe(canvas);
   addEventListener('resize', resize);
 
-  // pointer (slow-followed for smoothness)
+  // idle tracking (defined first so handlers can call bumpActivity)
+  const IDLE_AFTER_MS = 18000;
+  let lastActivity = performance.now();
+  let idleValue = 0;
+  function bumpActivity() { lastActivity = performance.now(); }
+  addEventListener('keydown', bumpActivity);
+  addEventListener('touchstart', bumpActivity, { passive: true });
+
+  // pointer with eased follow
   let px = 0.78, py = 0.34, tx = 0.78, ty = 0.34;
   addEventListener('pointermove', (e) => {
     tx = e.clientX / innerWidth;
     ty = 1.0 - e.clientY / innerHeight;
+    bumpActivity();
   }, { passive: true });
 
   // scroll
@@ -284,35 +309,69 @@ function _mount(canvas, opts) {
   function updateScroll() {
     const max = (document.documentElement.scrollHeight - innerHeight) || 1;
     scrollY = Math.min(1, Math.max(0, (scrollEl.scrollY ?? scrollY) / Math.min(max, innerHeight * 1.4)));
+    bumpActivity();
   }
   scrollEl.addEventListener('scroll', updateScroll, { passive: true });
   updateScroll();
 
-  // pause when off-screen / tab hidden
+  // tab visibility pauses the loop
   let visible = true;
   document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
 
-  // breath state cache
-  let breath = 0.5, phase = 0, now = 0;
-  const unsub = onBreath(s => { breath = s.breath; phase = s.phase; now = s.now; });
+  // ampersand gravity target
+  let textAmpX = 0.78, textAmpY = 0.66;
+  const ampEl = document.querySelector(ampSelector);
+  function readAmp() {
+    if (!ampEl) return;
+    const r = ampEl.getBoundingClientRect();
+    if (r.width === 0) return;
+    textAmpX = (r.left + r.width / 2) / innerWidth;
+    textAmpY = 1.0 - (r.top + r.height / 2) / innerHeight;
+  }
+  readAmp();
+  addEventListener('resize', readAmp);
+  scrollEl.addEventListener('scroll', readAmp, { passive: true });
 
-  // render — subscribed to engine.js' RAF via a separate ticker
-  let lastT = performance.now();
+  // breath + cycle pulse
+  let breath = 0.5, phase = 0;
+  let pulseStartT = -1e6;
+  const unsub = onBreath(s => {
+    breath = s.breath; phase = s.phase;
+    if (s.cycleStart) pulseStartT = performance.now();
+  });
+
+  // mount fade-in
+  canvas.style.opacity = '0';
+  canvas.style.transition = 'opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)';
+  requestAnimationFrame(() => requestAnimationFrame(() => { canvas.style.opacity = '1'; }));
+
+  // render loop
   let raf;
   function frame(t) {
     raf = requestAnimationFrame(frame);
     if (!visible) return;
 
-    // ease pointer follow
+    // eased pointer follow
     px += (tx - px) * 0.06;
     py += (ty - py) * 0.06;
+
+    // idle ease
+    const sinceActive = t - lastActivity;
+    const idleTarget = sinceActive > IDLE_AFTER_MS ? 1 : 0;
+    idleValue += (idleTarget - idleValue) * 0.02;
+
+    // pulse ramp + decay over 2s after each cycle start
+    const pulseT = Math.max(0, Math.min(1, (t - pulseStartT) / 2000));
 
     gl.useProgram(prog);
     gl.uniform1f(uTime, t * 0.001);
     gl.uniform1f(uBreath, breath);
     gl.uniform1f(uPhase, phase);
     gl.uniform1f(uScroll, scrollY);
+    gl.uniform1f(uIdle, idleValue);
+    gl.uniform1f(uPulse, pulseT);
     gl.uniform2f(uPointer, px, py);
+    gl.uniform2f(uTextAmp, textAmpX, textAmpY);
     gl.uniform2f(uRes, W, H);
     gl.uniform3fv(uWarm,  palette.warm);
     gl.uniform3fv(uEmber, palette.ember);
@@ -323,18 +382,23 @@ function _mount(canvas, opts) {
   }
   raf = requestAnimationFrame(frame);
 
-  // optional dev params panel — only when ?dev is in the URL
-  if (location.search.includes('dev')) mountDevPanel({ getState: () => ({ breath, phase, scrollY }) });
+  if (location.search.includes('dev')) {
+    mountDevPanel({ getState: () => ({
+      breath, phase, scrollY,
+      idle: idleValue,
+      pulse: Math.max(0, Math.min(1, (performance.now() - pulseStartT) / 2000)),
+    }) });
+  }
 
   return () => {
     cancelAnimationFrame(raf);
     unsub();
     ro.disconnect();
     removeEventListener('resize', resize);
+    removeEventListener('resize', readAmp);
   };
 }
 
-// ── tiny dev params panel (no lil-gui dep) ─────────────────
 function mountDevPanel({ getState }) {
   if (document.getElementById('hero-dev')) return;
   const el = document.createElement('div');
@@ -343,12 +407,14 @@ function mountDevPanel({ getState }) {
     position: fixed; right: 12px; bottom: 12px; z-index: 9999;
     font: 10px/1.4 ui-monospace, monospace; color: #f5c97a;
     background: rgba(7, 6, 10, 0.78); border: 1px solid rgba(244,236,220,0.14);
-    border-radius: 8px; padding: 8px 10px; min-width: 160px;
-    backdrop-filter: blur(8px);
+    border-radius: 8px; padding: 8px 10px; min-width: 200px;
+    backdrop-filter: blur(8px); pointer-events: none; white-space: pre;
   `;
   document.body.appendChild(el);
   setInterval(() => {
     const s = getState();
-    el.textContent = `breath ${s.breath.toFixed(2)}  phase ${s.phase.toFixed(2)}  scroll ${s.scrollY.toFixed(2)}`;
+    el.textContent =
+      `breath ${s.breath.toFixed(2)}  phase ${s.phase.toFixed(2)}  scroll ${s.scrollY.toFixed(2)}\n` +
+      `idle   ${s.idle.toFixed(2)}  pulse ${s.pulse.toFixed(2)}`;
   }, 100);
 }

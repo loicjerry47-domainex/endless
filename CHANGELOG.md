@@ -6,6 +6,46 @@ Format: reverse-chronological. Keep entries terse. Link commits where useful.
 
 ---
 
+## v0.4.0 · hero, elevated — 2026-06-23
+
+Same architecture (vanilla WebGL2, no Three.js, no GSAP). Hero shader and motion choreography upgraded to award-tier feel. Seven changes inside `hero.js`, no new files, no new dependencies.
+
+### changed
+- `assets/js/hero.js` —
+  - **ACES filmic tonemap** at output. HDR additive light now maps through Narkowicz's curve. Biggest single visual lift.
+  - **Curl-noise domain warp** replaces dual-fbm warp. Divergence-free, reads as fluid flow.
+  - **Lateral chromatic aberration on the seed** during compressed phases. Per-channel bloom offsets give the seed a faint rainbow rim.
+  - **Interleaved Gradient Noise dither** at output (Jimenez). Replaces random-hash grain. Quieter, kills banding without the twitch.
+  - **Idle deepening.** After ~18s without pointer / scroll / key activity, the field slows and the photon ring brightens. Reverts smoothly on next input.
+  - **Cycle pulse.** A soft radial wave expands from the seed at each breath-cycle reset (2s window, then decays). The site's heartbeat made visible.
+  - **Hero ampersand gravity.** Seed centre is lerped 10% toward the live position of `#heroAmp`. Subtle; the image responds to where the glyph lives.
+  - Soft mount fade-in (~800ms opacity) so the page never flashes a frame of bare canvas.
+
+### unchanged
+- One global breath clock; no new RAF, no new dependency.
+- Reduced-motion path still short-circuits the entire pipeline.
+- WebGL2 unavailable still falls back to `substrate.js`.
+- DPR cap 1.75; idle-deferred init still in place.
+- No new colors, fonts, or libraries.
+
+### dev panel
+`?dev` overlay now also prints `idle` and `pulse` so you can see the new state.
+
+### tweak guide (line numbers approximate)
+1. **idle window** (`IDLE_AFTER_MS`, line ~256): default 18000ms. Raise for quicker meditation, lower for slower.
+2. **CA amount** (`caAmt` in shader, line ~131): default `(1 - breath) * 0.008`. Raise for a more obvious rainbow rim.
+3. **pulse decay window** (`/ 2000` in JS, line ~318): default 2s. Stretch for a slower heartbeat.
+
+### checkpoint
+- [x] No new accent colors, fonts, or libraries
+- [x] `prefers-reduced-motion` path unchanged
+- [x] WebGL2 fallback unchanged
+- [x] Brand gates still pass locally
+- [x] Same one-RAF subscription to engine.js
+- [x] Mount fade-in respects reduced-motion (CSS transition snaps to 0.01ms in that case via system.css)
+
+---
+
 ## v0.3.0 · the name is endless — 2026-06-23
 
 `DDUP · DOMAINEX` was the working codename through v0.0.x. The product name is **endless**. Cleaned up every user-visible mention so the chrome reads as one thing.
